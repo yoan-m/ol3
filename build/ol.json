@@ -16,7 +16,8 @@
     "build/src/external/externs/types.js",
     "externs/bingmaps.js",
     "externs/proj4js.js",
-    "externs/tilejson.js"
+    "externs/tilejson.js",
+    "externs/cesium.js"
   ],
 
   "inherits": "../base.json",

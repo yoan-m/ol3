@@ -41,7 +41,8 @@
   "externs": [
     "externs/bingmaps.js",
     "externs/proj4js.js",
-    "externs/tilejson.js"
+    "externs/tilejson.js",
+    "externs/cesium.js"
   ],
 
   "level": "VERBOSE",
