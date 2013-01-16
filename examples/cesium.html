@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <style type="text/css">
+      .map {
+        width: 400px;
+        height: 400px;
+        border: thin solid #cccccc;
+        margin: 1em;
+      }
+    </style>
+    <title>Cesium integration example</title>
+  </head>
+  <body>
+    <h1 id="title">Cesium integration example</h1>
+    <div id="shortdesc">Integrating OpenLayers 3 and Cesium.</div>
+    <table>
+      <tr>
+        <th>OL3</th>
+        <th>Cesium</th>
+      </tr>
+      <tr>
+        <td><div id="ol3" class="map"></div></td>
+        <td><div id="cesium" class="map"></div></td>
+      </tr>
+    </table>
+    <div id="docs">
+      <p>See the
+      <a href="cesium.js" target="_blank">cesium.js source</a> to
+      see how this is done.</p>
+    </div>
+    <div id="tags">cesium</div>
+    <script src="cesium/Build/Cesium.js" type="text/javascript"></script>
+    <script src="loader.js?id=cesium" type="text/javascript"></script>
+  </body>
+</html>
