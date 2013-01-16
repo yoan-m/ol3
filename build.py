@@ -48,7 +48,8 @@ EXAMPLES_SRC = [path
                 if path.endswith('.js')
                 if not path.endswith('.combined.js')
                 if path != 'examples/Jugl.js'
-                if path != 'examples/example-list.js']
+                if path != 'examples/example-list.js'
+                if not path.startswith('examples/cesium')]
 
 INTERNAL_SRC = [
     'build/src/internal/src/requireall.js',
