@@ -286,7 +286,7 @@ def ifind(*paths):
     for path in paths:
         for dirpath, dirnames, names in os.walk(path):
             for name in names:
-                yield os.path.join(dirpath, name)
+                yield '/'.join((dirpath, name))
 
 
 def main(argv=sys.argv):
