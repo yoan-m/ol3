@@ -13,12 +13,20 @@ from pake import Target, ifind, main, output, rule, target, variables, virtual
 
 
 if sys.platform == 'win32':
-    variables.GIT = 'C:/Program Files/Git/bin/git.exe'
-    variables.GJSLINT = 'gjslint'  # FIXME
-    variables.JAVA = 'C:/Program Files/Java/jre7/bin/java.exe'
-    variables.JSDOC = 'jsdoc'  # FIXME
-    variables.PHANTOMJS = 'phantomjs'  # FIXME
-    variables.PYTHON = 'C:/Python27/python.exe'
+    if os.environ['PROGRAMFILES'] == 'C:\Program Files (x86)':
+        variables.GIT = 'C:/Program Files (x86)/Git/bin/git.exe'
+        variables.GJSLINT = 'gjslint'  # FIXME
+        variables.JAVA = 'C:/Program Files (x86)/Java/jre7/bin/java.exe'
+        variables.JSDOC = 'jsdoc.cmd'  # FIXME
+        variables.PHANTOMJS = 'phantomjs'  # FIXME
+        variables.PYTHON = 'C:/Python27/python.exe'
+    else:
+        variables.GIT = 'C:/Program Files/Git/bin/git.exe'
+        variables.GJSLINT = 'gjslint'  # FIXME
+        variables.JAVA = 'C:/Program Files/Java/jre7/bin/java.exe'
+        variables.JSDOC = 'jsdoc'  # FIXME
+        variables.PHANTOMJS = 'phantomjs'  # FIXME
+        variables.PYTHON = 'C:/Python27/python.exe'
 else:
     variables.GIT = 'git'
     variables.GJSLINT = 'gjslint'
