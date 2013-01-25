@@ -22,8 +22,10 @@ var scene = new Cesium.Scene(canvas);
 var primitives = scene.getPrimitives();
 
 var imageryUrl = 'cesium/Source/Assets/Textures/';
-var imageryProvider = new Cesium.SingleTileImageryProvider({
-    url : imageryUrl + 'NE2_LR_LC_SR_W_DR_2048.jpg'
+var imageryProvider = new Cesium.OpenStreetMapImageryProvider({
+  url : 'http://otile1.mqcdn.com/tiles/1.0.0/sat/',
+  fileExtension : 'jpg',
+  proxy : Cesium.FeatureDetection.supportsCrossOriginImagery() ? undefined : new Cesium.DefaultProxy('/proxy/')
 });
 
 var cb = new Cesium.CentralBody(ellipsoid);
@@ -81,12 +83,41 @@ var map = new ol.Map({
   target: 'ol3',
   view: view
 });
+
+var TILE_SIZE = 256.0;
+
+var projection = new Cesium.WebMercatorProjection(ellipsoid);
+var camera = scene.getCamera();
+
+function updateCesiumCamera() {
+  var center = view.getCenter();
+
+  var positionCart = projection.unproject(center);
+  positionCart.longitude = Cesium.Math.clamp(positionCart.longitude, -Math.PI, Math.PI);
+  positionCart.latitude = Cesium.Math.clamp(positionCart.latitude, -Cesium.Math.PI_OVER_TWO, Cesium.Math.PI_OVER_TWO);
+  positionCart.height = view.getResolution() * TILE_SIZE;
+  ellipsoid.cartographicToCartesian(positionCart, camera.position);
+
+  Cesium.Cartesian3.negate(camera.position, camera.direction);
+  Cesium.Cartesian3.normalize(camera.direction, camera.direction);
+  Cesium.Cartesian3.cross(camera.direction, Cesium.Cartesian3.UNIT_Z, camera.right);
+  Cesium.Cartesian3.cross(camera.right, camera.direction, camera.up);
+  
+  var angle = view.getRotation();
+  var rotation = Cesium.Matrix3.fromQuaternion(Cesium.Quaternion.fromAxisAngle(camera.direction, angle));
+  Cesium.Matrix3.multiplyByVector(rotation, camera.up, camera.up);
+  Cesium.Cartesian3.cross(camera.direction, camera.up, camera.right);
+}
+
 view.addEventListener('center_changed', function() {
   window.console.log('center changed');
+  updateCesiumCamera();
 });
 view.addEventListener('resolution_changed', function() {
   window.console.log('resolution changed');
+    updateCesiumCamera();
 });
 view.addEventListener('rotation_changed', function() {
   window.console.log('rotation changed');
+  updateCesiumCamera();
 });
