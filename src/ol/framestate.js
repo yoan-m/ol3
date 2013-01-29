@@ -1,4 +1,5 @@
 // FIXME add view3DState
+// FIXME factor out common code between usedTiles and wantedTiles
 
 goog.provide('ol.FrameState');
 goog.provide('ol.PostRenderFunction');
@@ -10,6 +11,7 @@ goog.require('ol.Coordinate');
 goog.require('ol.Extent');
 goog.require('ol.Size');
 goog.require('ol.TileQueue');
+goog.require('ol.TileRange');
 goog.require('ol.View2DState');
 goog.require('ol.layer.LayerState');
 
@@ -26,8 +28,10 @@ goog.require('ol.layer.LayerState');
  *            size: ol.Size,
  *            tileQueue: ol.TileQueue,
  *            time: number,
+ *            usedTiles: Object.<string, Object.<string, ol.TileRange>>,
  *            view2DState: ol.View2DState,
- *            viewHints: Array.<number>}}
+ *            viewHints: Array.<number>,
+ *            wantedTiles: Object.<string, Object.<string, ol.TileRange>>}}
  */
 ol.FrameState;
 

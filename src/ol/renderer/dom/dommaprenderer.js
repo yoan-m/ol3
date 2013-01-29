@@ -1,5 +1,6 @@
 goog.provide('ol.renderer.dom.Map');
 
+goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
@@ -68,15 +69,6 @@ ol.renderer.dom.Map.prototype.createLayerRenderer = function(layer) {
     goog.asserts.assert(false);
     return null;
   }
-};
-
-
-/**
- * @inheritDoc
- */
-ol.renderer.dom.Map.prototype.removeLayer = function(layer) {
-  goog.base(this, 'removeLayer', layer);
-  this.getMap().render();
 };
 
 

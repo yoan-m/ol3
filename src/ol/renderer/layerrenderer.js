@@ -2,9 +2,12 @@ goog.provide('ol.renderer.Layer');
 
 goog.require('goog.events');
 goog.require('goog.events.EventType');
+goog.require('ol.FrameState');
 goog.require('ol.Object');
+goog.require('ol.TileRange');
 goog.require('ol.layer.Layer');
 goog.require('ol.layer.LayerProperty');
+goog.require('ol.source.TileSource');
 
 
 
@@ -125,3 +128,70 @@ ol.renderer.Layer.prototype.handleLayerSaturationChange = goog.nullFunction;
  * @protected
  */
 ol.renderer.Layer.prototype.handleLayerVisibleChange = goog.nullFunction;
+
+
+/**
+ * @protected
+ * @param {ol.FrameState} frameState Frame state.
+ * @param {ol.source.TileSource} tileSource Tile source.
+ */
+ol.renderer.Layer.prototype.scheduleExpireCache =
+    function(frameState, tileSource) {
+  if (tileSource.canExpireCache()) {
+    frameState.postRenderFunctions.push(
+        goog.partial(function(tileSource, map, frameState) {
+          var tileSourceKey = goog.getUid(tileSource).toString();
+          tileSource.expireCache(frameState.usedTiles[tileSourceKey]);
+        }, tileSource));
+  }
+};
+
+
+/**
+ * @protected
+ * @param {Object.<string, Object.<string, ol.TileRange>>} usedTiles Used tiles.
+ * @param {ol.source.Source} source Source.
+ * @param {number} z Z.
+ * @param {ol.TileRange} tileRange Tile range.
+ */
+ol.renderer.Layer.prototype.updateUsedTiles =
+    function(usedTiles, source, z, tileRange) {
+  // FIXME should we use tilesToDrawByZ instead?
+  var sourceKey = goog.getUid(source).toString();
+  var zKey = z.toString();
+  if (sourceKey in usedTiles) {
+    if (zKey in usedTiles[sourceKey]) {
+      usedTiles[sourceKey][zKey].extend(tileRange);
+    } else {
+      usedTiles[sourceKey][zKey] = tileRange;
+    }
+  } else {
+    usedTiles[sourceKey] = {};
+    usedTiles[sourceKey][zKey] = tileRange;
+  }
+};
+
+
+/**
+ * @protected
+ * @param {Object.<string, Object.<string, ol.TileRange>>} wantedTiles Wanted
+ *     tile ranges.
+ * @param {ol.source.Source} source Source.
+ * @param {number} z Z.
+ * @param {ol.TileRange} tileRange Tile range.
+ */
+ol.renderer.Layer.prototype.updateWantedTiles =
+    function(wantedTiles, source, z, tileRange) {
+  var sourceKey = goog.getUid(source).toString();
+  var zKey = z.toString();
+  if (sourceKey in wantedTiles) {
+    if (zKey in wantedTiles[sourceKey]) {
+      wantedTiles[sourceKey][zKey].extend(tileRange);
+    } else {
+      wantedTiles[sourceKey][zKey] = tileRange;
+    }
+  } else {
+    wantedTiles[sourceKey] = {};
+    wantedTiles[sourceKey][zKey] = tileRange;
+  }
+};
