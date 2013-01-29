@@ -12,3 +12,5 @@
 /examples/*.combined.js
 /examples/example-list.js
 /examples/example-list.xml
+/examples/Cesium-*.zip
+/examples/cesium

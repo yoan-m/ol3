@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import sys
+import zipfile
 
 from pake import Target, ifind, main, output, rule, target, variables, virtual
 
@@ -73,6 +74,9 @@ SRC = [path
 
 PLOVR_JAR = 'bin/plovr-eba786b34df9.jar'
 PLOVR_JAR_MD5 = '20eac8ccc4578676511cf7ccbfc65100'
+
+CESIUM_ZIP = 'examples/Cesium-b12a.zip'
+CESIUM_DIR = 'examples/cesium'
 
 
 def report_sizes(t):
@@ -152,7 +156,7 @@ def build_src_internal_types_js(t):
 virtual('build-examples', 'examples', (path.replace('.html', '.combined.js') for path in EXAMPLES))
 
 
-virtual('examples', 'examples/example-list.js', (path.replace('.html', '.json') for path in EXAMPLES))
+virtual('examples', 'examples/example-list.js', 'cesium', (path.replace('.html', '.json') for path in EXAMPLES))
 
 
 @target('examples/example-list.js', 'bin/exampleparser.py', EXAMPLES)
@@ -220,6 +224,20 @@ virtual('plovr', PLOVR_JAR)
 @target(PLOVR_JAR, clean=False)
 def plovr_jar(t):
     t.download('https://plovr.googlecode.com/files/' + os.path.basename(PLOVR_JAR), md5=PLOVR_JAR_MD5)
+
+
+virtual('cesium', CESIUM_DIR)
+
+
+@target(CESIUM_DIR, CESIUM_ZIP, clean=False)
+def cesium_dir(t):
+    z = zipfile.ZipFile(CESIUM_ZIP)
+    z.extractall(CESIUM_DIR)
+
+
+@target(CESIUM_ZIP, clean=False)
+def cesium_zip(t):
+    t.download('http://cesium.agi.com/releases/' + os.path.basename(CESIUM_ZIP))
 
 
 @target('gh-pages', 'hostexamples', 'doc', phony=True)
