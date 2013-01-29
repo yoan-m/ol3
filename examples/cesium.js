@@ -10,7 +10,7 @@ goog.require('ol.source.MapQuestOpenAerial');
 
 
 /*
- * Cesium
+ * Set up Cesium globe.
  */
 
 var canvas = document.createElement('canvas');
@@ -25,7 +25,8 @@ var imageryUrl = 'cesium/Source/Assets/Textures/';
 var imageryProvider = new Cesium.OpenStreetMapImageryProvider({
   url : 'http://otile1.mqcdn.com/tiles/1.0.0/sat/',
   fileExtension : 'jpg',
-  proxy : Cesium.FeatureDetection.supportsCrossOriginImagery() ? undefined : new Cesium.DefaultProxy('/proxy/')
+  proxy : Cesium.FeatureDetection.supportsCrossOriginImagery() ?
+      undefined : new Cesium.DefaultProxy('/proxy/')
 });
 
 var cb = new Cesium.CentralBody(ellipsoid);
@@ -67,8 +68,9 @@ var onResize = function () {
 window.addEventListener('resize', onResize, false);
 onResize();
 
+
 /*
- * OpenLayers
+ * Set up OpenLayers 3 map.
  */
 
 var layer = new ol.layer.TileLayer({
@@ -84,6 +86,11 @@ var map = new ol.Map({
   view: view
 });
 
+
+/*
+ * View/Camera synchronization.
+ */
+
 var TILE_SIZE = 256.0;
 
 var projection = new Cesium.WebMercatorProjection(ellipsoid);
@@ -93,31 +100,32 @@ function updateCesiumCamera() {
   var center = view.getCenter();
 
   var positionCart = projection.unproject(center);
-  positionCart.longitude = Cesium.Math.clamp(positionCart.longitude, -Math.PI, Math.PI);
-  positionCart.latitude = Cesium.Math.clamp(positionCart.latitude, -Cesium.Math.PI_OVER_TWO, Cesium.Math.PI_OVER_TWO);
+  positionCart.longitude = Cesium.Math.clamp(
+      positionCart.longitude, -Math.PI, Math.PI);
+  positionCart.latitude = Cesium.Math.clamp(
+      positionCart.latitude, -Cesium.Math.PI_OVER_TWO, Cesium.Math.PI_OVER_TWO);
   positionCart.height = view.getResolution() * TILE_SIZE;
   ellipsoid.cartographicToCartesian(positionCart, camera.position);
 
   Cesium.Cartesian3.negate(camera.position, camera.direction);
   Cesium.Cartesian3.normalize(camera.direction, camera.direction);
-  Cesium.Cartesian3.cross(camera.direction, Cesium.Cartesian3.UNIT_Z, camera.right);
+  Cesium.Cartesian3.cross(camera.direction, Cesium.Cartesian3.UNIT_Z,
+      camera.right);
   Cesium.Cartesian3.cross(camera.right, camera.direction, camera.up);
   
   var angle = view.getRotation();
-  var rotation = Cesium.Matrix3.fromQuaternion(Cesium.Quaternion.fromAxisAngle(camera.direction, angle));
+  var rotation = Cesium.Matrix3.fromQuaternion(
+      Cesium.Quaternion.fromAxisAngle(camera.direction, angle));
   Cesium.Matrix3.multiplyByVector(rotation, camera.up, camera.up);
   Cesium.Cartesian3.cross(camera.direction, camera.up, camera.right);
 }
 
 view.addEventListener('center_changed', function() {
-  window.console.log('center changed');
   updateCesiumCamera();
 });
 view.addEventListener('resolution_changed', function() {
-  window.console.log('resolution changed');
-    updateCesiumCamera();
+  updateCesiumCamera();
 });
 view.addEventListener('rotation_changed', function() {
-  window.console.log('rotation changed');
   updateCesiumCamera();
 });
