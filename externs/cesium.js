@@ -103,6 +103,14 @@ Cesium.Cartesian3.negate = function(cartesian, result) {};
 Cesium.Cartesian3.cross = function(left, right, result) {};
 
 
+/**
+ * @param {Cesium.Cartesian3} left
+ * @param {Cesium.Cartesian3} right
+ * @return {number}
+ */
+Cesium.Cartesian3.dot = function(left, right) {};
+
+
 
 /**
  * @constructor
@@ -257,6 +265,12 @@ Cesium.Math.clamp = function(value, min, max) {};
  * @type {number}
  */
 Cesium.Math.PI_OVER_TWO;
+
+
+/**
+ * @type {number}
+ */
+Cesium.Math.TWO_PI;
 
 
 
@@ -504,6 +518,13 @@ Cesium.SkyBoxOptions_.prototype.negativeZ;
  * @param {Cesium.Ellipsoid} ellipsoid
  */
 Cesium.WebMercatorProjection = function(ellipsoid) {};
+
+
+/**
+ * @param {Cesium.Cartographic} cartographic
+ * @return {Cesium.Cartesian3}
+ */
+Cesium.WebMercatorProjection.prototype.project = function(cartographic) {};
 
 
 /**

@@ -43,8 +43,10 @@ scene.skyBox = new Cesium.SkyBox({
 });
 
 function animate() {
-    // INSERT CODE HERE to update primitives based on changes to
-    // animation time, camera parameters, etc.
+  // INSERT CODE HERE to update primitives based on changes to
+  // animation time, camera parameters, etc.
+  
+  updateOpenLayersView();
 }
 
 function tick() {
@@ -95,6 +97,19 @@ var TILE_SIZE = 256.0;
 
 var projection = new Cesium.WebMercatorProjection(ellipsoid);
 var camera = scene.getCamera();
+
+function updateOpenLayersView() {
+  if (typeof camera === 'undefined') {
+    return;
+  }
+
+  var positionCart = new Cesium.Cartographic(0.0, 0.0, 0.0);
+  ellipsoid.cartesianToCartographic(camera.position, positionCart);
+  var position = projection.project(positionCart);
+  view.setCenter(new ol.Coordinate(position.x, position.y));
+  
+  view.setResolution(positionCart.height / TILE_SIZE);
+}
 
 function updateCesiumCamera() {
   var center = view.getCenter();
