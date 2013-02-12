@@ -291,7 +291,7 @@ def ifind(*paths):
                 if sys.platform == 'win32':
                     yield '/'.join(dirpath.split('\\') + [name])
                 else:
-                yield os.path.join(dirpath, name)
+                    yield os.path.join(dirpath, name)
 
 
 def main(argv=sys.argv):

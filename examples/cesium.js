@@ -1,13 +1,13 @@
 goog.require('goog.debug.Console');
 goog.require('goog.debug.Logger');
 goog.require('goog.debug.Logger.Level');
+goog.require('ol.Cesium');
 goog.require('ol.Collection');
 goog.require('ol.Coordinate');
 goog.require('ol.Map');
 goog.require('ol.View2D');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.source.MapQuestOpenAerial');
-goog.require('ol.Cesium');
 
 
 
@@ -29,7 +29,7 @@ var map = new ol.Map({
   view: view
 });
 var cesium = new ol.Cesium({
-	layers: new ol.Collection([layer]),
-	target: 'cesium',
-	view: view
+  layers: new ol.Collection([layer]),
+  target: 'cesium',
+  view: view
 });
