@@ -15,6 +15,10 @@
 @exportObjectLiteralProperty ol.MapOptions.view ol.IView|undefined
 @exportObjectLiteralProperty ol.MapOptions.zoomDelta number|undefined
 
+@exportObjectLiteral ol.CesiumOptions
+@exportObjectLiteralProperty ol.CesiumOptions.target Element|string
+@exportObjectLiteralProperty ol.CesiumOptions.view ol.IView|undefined
+
 @exportObjectLiteral ol.View2DOptions
 @exportObjectLiteralProperty ol.View2DOptions.center ol.Coordinate|undefined
 @exportObjectLiteralProperty ol.View2DOptions.maxResolution number|undefined

@@ -11,3 +11,5 @@
 
 @exportSymbol ol.RendererHints
 @exportProperty ol.RendererHints.createFromQueryData
+
+@exportClass ol.Cesium ol.CesiumOptions

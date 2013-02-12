@@ -404,6 +404,12 @@ Cesium.Scene.prototype.render = function() {};
 Cesium.Scene.prototype.mode;
 
 
+/**
+ * @type {Cesium.SkyBox}
+ */
+Cesium.Scene.prototype.skyBox;
+
+
 
 /**
  * @constructor
