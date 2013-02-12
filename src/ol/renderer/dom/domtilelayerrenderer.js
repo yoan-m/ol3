@@ -5,17 +5,16 @@ goog.provide('ol.renderer.dom.TileLayer');
 
 goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.math.Vec2');
 goog.require('goog.style');
 goog.require('goog.vec.Mat4');
 goog.require('ol.Coordinate');
 goog.require('ol.Extent');
-goog.require('ol.Size');
+goog.require('ol.Tile');
 goog.require('ol.TileCoord');
-goog.require('ol.TileRange');
 goog.require('ol.TileState');
 goog.require('ol.ViewHint');
 goog.require('ol.dom');
+goog.require('ol.layer.TileLayer');
 goog.require('ol.renderer.dom.Layer');
 goog.require('ol.tilegrid.TileGrid');
 
@@ -30,7 +29,7 @@ goog.require('ol.tilegrid.TileGrid');
 ol.renderer.dom.TileLayer = function(mapRenderer, tileLayer) {
 
   var target = goog.dom.createElement(goog.dom.TagName.DIV);
-  target.className = 'ol-layer';
+  target.className = 'ol-layer-tile';
   target.style.position = 'absolute';
 
   goog.base(this, mapRenderer, tileLayer, target);
@@ -132,6 +131,9 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
 
       tileState = tile.getState();
       if (tileState == ol.TileState.IDLE) {
+        goog.events.listenOnce(tile, goog.events.EventType.CHANGE,
+            this.handleTileChange, false, this);
+        this.updateWantedTiles(frameState.wantedTiles, tileSource, tileCoord);
         tileCenter = tileGrid.getTileCoordCenter(tileCoord);
         frameState.tileQueue.enqueue(tile, tileSourceKey, tileCenter);
       } else if (tileState == ol.TileState.LOADED) {
@@ -231,11 +233,6 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
   if (layerState.visible && !this.renderedVisible_) {
     goog.style.showElement(this.target, true);
     this.renderedVisible_ = true;
-  }
-
-  if (!allTilesLoaded) {
-    frameState.animate = true;
-    this.updateWantedTiles(frameState.wantedTiles, tileSource, z, tileRange);
   }
 
   this.updateUsedTiles(frameState.usedTiles, tileSource, z, tileRange);

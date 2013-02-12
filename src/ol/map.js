@@ -10,7 +10,6 @@ goog.provide('ol.RendererHints');
 goog.require('goog.Uri.QueryData');
 goog.require('goog.async.AnimationDelay');
 goog.require('goog.debug.Logger');
-goog.require('goog.dispose');
 goog.require('goog.dom');
 goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.events');
@@ -19,28 +18,33 @@ goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyHandler');
 goog.require('goog.events.KeyHandler.EventType');
-goog.require('goog.events.MouseWheelEvent');
 goog.require('goog.events.MouseWheelHandler');
 goog.require('goog.events.MouseWheelHandler.EventType');
-goog.require('goog.object');
 goog.require('ol.BrowserFeature');
 goog.require('ol.Collection');
 goog.require('ol.Color');
 goog.require('ol.Coordinate');
 goog.require('ol.Extent');
 goog.require('ol.FrameState');
+goog.require('ol.IView');
+goog.require('ol.Kinetic');
 goog.require('ol.MapBrowserEvent');
+goog.require('ol.MapBrowserEvent.EventType');
+goog.require('ol.MapBrowserEventHandler');
+goog.require('ol.MapEvent');
+goog.require('ol.MapEventType');
 goog.require('ol.Object');
+goog.require('ol.ObjectEventType');
 goog.require('ol.Pixel');
-goog.require('ol.ResolutionConstraint');
-goog.require('ol.RotationConstraint');
+goog.require('ol.PostRenderFunction');
+goog.require('ol.PreRenderFunction');
 goog.require('ol.Size');
+goog.require('ol.Tile');
 goog.require('ol.TileQueue');
-goog.require('ol.TransformFunction');
 goog.require('ol.View');
 goog.require('ol.View2D');
-goog.require('ol.View2DState');
 goog.require('ol.control.Attribution');
+goog.require('ol.control.Control');
 goog.require('ol.control.Zoom');
 goog.require('ol.interaction.DblClickZoom');
 goog.require('ol.interaction.DragPan');
@@ -51,14 +55,14 @@ goog.require('ol.interaction.KeyboardPan');
 goog.require('ol.interaction.KeyboardZoom');
 goog.require('ol.interaction.MouseWheelZoom');
 goog.require('ol.interaction.condition');
-goog.require('ol.renderer.Layer');
+goog.require('ol.layer.Layer');
 goog.require('ol.renderer.Map');
-goog.require('ol.renderer.canvas');
 goog.require('ol.renderer.canvas.Map');
-goog.require('ol.renderer.dom');
+goog.require('ol.renderer.canvas.isSupported');
 goog.require('ol.renderer.dom.Map');
-goog.require('ol.renderer.webgl');
+goog.require('ol.renderer.dom.isSupported');
 goog.require('ol.renderer.webgl.Map');
+goog.require('ol.renderer.webgl.isSupported');
 
 
 /**
@@ -207,13 +211,9 @@ ol.Map = function(mapOptions) {
   goog.dom.appendChild(this.viewport_, this.overlayContainer_);
 
   var mapBrowserEventHandler = new ol.MapBrowserEventHandler(this);
-  goog.events.listen(mapBrowserEventHandler, [
-    ol.MapBrowserEvent.EventType.CLICK,
-    ol.MapBrowserEvent.EventType.DBLCLICK,
-    ol.MapBrowserEvent.EventType.DRAGSTART,
-    ol.MapBrowserEvent.EventType.DRAG,
-    ol.MapBrowserEvent.EventType.DRAGEND
-  ], this.handleMapBrowserEvent, false, this);
+  goog.events.listen(mapBrowserEventHandler,
+      goog.object.getValues(ol.MapBrowserEvent.EventType),
+      this.handleMapBrowserEvent, false, this);
   this.registerDisposable(mapBrowserEventHandler);
 
   // FIXME we probably shouldn't listen on document...
@@ -227,17 +227,6 @@ ol.Map = function(mapOptions) {
       goog.events.MouseWheelHandler.EventType.MOUSEWHEEL,
       this.handleBrowserEvent, false, this);
   this.registerDisposable(mouseWheelHandler);
-
-  /**
-   * @type {ol.Collection}
-   * @private
-   */
-  this.controls_ = mapOptionsInternal.controls;
-
-  goog.events.listen(this.controls_, ol.CollectionEventType.ADD,
-      this.handleControlsAdd_, false, this);
-  goog.events.listen(this.controls_, ol.CollectionEventType.REMOVE,
-      this.handleControlsRemove_, false, this);
 
   /**
    * @type {ol.Collection}
@@ -291,13 +280,15 @@ ol.Map = function(mapOptions) {
       this.handleSizeChanged_, false, this);
   goog.events.listen(
       this, ol.Object.getChangedEventType(ol.MapProperty.BACKGROUND_COLOR),
-      this.handleBackgroundColorChanged_, false, this),
+      this.handleBackgroundColorChanged_, false, this);
   this.setValues(mapOptionsInternal.values);
 
   // this gives the map an initial size
   this.handleBrowserWindowResize();
 
-  this.controls_.forEach(
+  /** @type {Array.<ol.control.Control>} */
+  var controls = mapOptionsInternal.controls;
+  goog.array.forEach(controls,
       /**
        * @param {ol.control.Control} control Control.
        */
@@ -326,6 +317,15 @@ ol.Map.prototype.addPreRenderFunctions = function(preRenderFunctions) {
   this.requestRenderFrame();
   Array.prototype.push.apply(
       this.preRenderFunctions_, preRenderFunctions);
+};
+
+
+/**
+ * @param {ol.PreRenderFunction} preRenderFunction Pre-render function.
+ * @return {boolean} Whether the preRenderFunction has been found and removed.
+ */
+ol.Map.prototype.removePreRenderFunction = function(preRenderFunction) {
+  return goog.array.remove(this.preRenderFunctions_, preRenderFunction);
 };
 
 
@@ -373,14 +373,6 @@ ol.Map.prototype.getRenderer = function() {
  */
 ol.Map.prototype.getTarget = function() {
   return this.target_;
-};
-
-
-/**
- * @return {ol.Collection} Controls.
- */
-ol.Map.prototype.getControls = function() {
-  return this.controls_;
 };
 
 
@@ -489,9 +481,8 @@ ol.Map.prototype.getTilePriority = function(tile, tileSourceKey, tileCenter) {
   if (goog.isNull(frameState) || !(tileSourceKey in frameState.wantedTiles)) {
     return ol.TileQueue.DROP;
   }
-  var zKey = tile.tileCoord.z.toString();
-  if (!(zKey in frameState.wantedTiles[tileSourceKey]) ||
-      !frameState.wantedTiles[tileSourceKey][zKey].contains(tile.tileCoord)) {
+  var coordKey = tile.tileCoord.toString();
+  if (!frameState.wantedTiles[tileSourceKey][coordKey]) {
     return ol.TileQueue.DROP;
   }
   var center = frameState.view2DState.center;
@@ -513,29 +504,10 @@ ol.Map.prototype.handleBrowserEvent = function(browserEvent, opt_type) {
 
 
 /**
- * @param {ol.CollectionEvent} collectionEvent Collection event.
- * @private
- */
-ol.Map.prototype.handleControlsAdd_ = function(collectionEvent) {
-  var control = /** @type {ol.control.Control} */ (collectionEvent.elem);
-  control.setMap(this);
-};
-
-
-/**
- * @param {ol.CollectionEvent} collectionEvent Collection event.
- * @private
- */
-ol.Map.prototype.handleControlsRemove_ = function(collectionEvent) {
-  var control = /** @type {ol.control.Control} */ (collectionEvent.elem);
-  control.setMap(null);
-};
-
-
-/**
  * @param {ol.MapBrowserEvent} mapBrowserEvent The event to handle.
  */
 ol.Map.prototype.handleMapBrowserEvent = function(mapBrowserEvent) {
+  mapBrowserEvent.frameState = this.frameState_;
   var interactions = this.getInteractions();
   var interactionsArray = /** @type {Array.<ol.interaction.Interaction>} */
       (interactions.getArray());
@@ -742,8 +714,8 @@ ol.Map.prototype.renderFrame_ = function(time) {
     frameState.extent = ol.Extent.boundingExtent.apply(null, corners);
   }
 
-  this.renderer_.renderFrame(frameState);
   this.frameState_ = frameState;
+  this.renderer_.renderFrame(frameState);
   this.dirty_ = false;
 
   if (!goog.isNull(frameState)) {
@@ -837,7 +809,7 @@ ol.Map.prototype.withFrozenRendering = function(f, opt_obj) {
 
 
 /**
- * @typedef {{controls: ol.Collection,
+ * @typedef {{controls: Array.<ol.control.Control>,
  *            interactions: ol.Collection,
  *            rendererConstructor:
  *                function(new: ol.renderer.Map, Element, ol.Map),
@@ -903,14 +875,9 @@ ol.Map.createOptionsInternal = function(mapOptions) {
   }
 
   /**
-   * @type {ol.Collection}
+   * @type {Array.<ol.control.Control>}
    */
-  var controls;
-  if (goog.isDef(mapOptions.controls)) {
-    controls = mapOptions.controls;
-  } else {
-    controls = ol.Map.createControls_(mapOptions);
-  }
+  var controls = ol.Map.createControls_(mapOptions);
 
   /**
    * @type {ol.Collection}
@@ -941,22 +908,29 @@ ol.Map.createOptionsInternal = function(mapOptions) {
 /**
  * @private
  * @param {ol.MapOptions} mapOptions Map options.
- * @return {ol.Collection} Controls.
+ * @return {Array.<ol.control.Control>} Controls.
  */
 ol.Map.createControls_ = function(mapOptions) {
+  /** @type {Array.<ol.control.Control>} */
+  var controls = [];
 
-  var controls = new ol.Collection();
+  var attributionControl = goog.isDef(mapOptions.attributionControl) ?
+      mapOptions.attributionControl : true;
+  if (attributionControl) {
+    controls.push(new ol.control.Attribution({}));
+  }
 
-  controls.push(new ol.control.Attribution({}));
-
-  var zoomDelta = goog.isDef(mapOptions.zoomDelta) ?
-      mapOptions.zoomDelta : 4;
-  controls.push(new ol.control.Zoom({
-    delta: zoomDelta
-  }));
+  var zoomControl = goog.isDef(mapOptions.zoomControl) ?
+      mapOptions.zoomControl : true;
+  if (zoomControl) {
+    var zoomDelta = goog.isDef(mapOptions.zoomDelta) ?
+        mapOptions.zoomDelta : 4;
+    controls.push(new ol.control.Zoom({
+      delta: zoomDelta
+    }));
+  }
 
   return controls;
-
 };
 
 
@@ -988,7 +962,8 @@ ol.Map.createInteractions_ = function(mapOptions) {
       mapOptions.dragPan : true;
   if (dragPan) {
     interactions.push(
-        new ol.interaction.DragPan(ol.interaction.condition.noModifierKeys));
+        new ol.interaction.DragPan(ol.interaction.condition.noModifierKeys,
+            new ol.Kinetic(-0.005, 0.05, 100)));
   }
 
   var keyboard = goog.isDef(mapOptions.keyboard) ?

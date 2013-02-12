@@ -3,7 +3,6 @@
 goog.provide('ol.interaction.DragRotateAndZoom');
 
 goog.require('goog.math.Vec2');
-goog.require('ol.MapBrowserEvent');
 goog.require('ol.View2D');
 goog.require('ol.interaction.ConditionType');
 goog.require('ol.interaction.Drag');
@@ -80,7 +79,7 @@ ol.interaction.DragRotateAndZoom.prototype.handleDragStart =
         browserEvent.offsetX - size.width / 2,
         size.height / 2 - browserEvent.offsetY);
     var theta = Math.atan2(delta.y, delta.x);
-    this.startRotation_ = (view.getRotation() || 0) + theta;
+    this.startRotation_ = view.getRotation() + theta;
     this.startRatio_ = resolution / delta.magnitude();
     map.requestRenderFrame();
     return true;

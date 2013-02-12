@@ -4,11 +4,7 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
-goog.require('goog.events');
-goog.require('goog.events.Event');
 goog.require('goog.style');
-goog.require('ol.Coordinate');
-goog.require('ol.FrameState');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.renderer.Map');
 goog.require('ol.renderer.dom.TileLayer');
@@ -30,7 +26,7 @@ ol.renderer.dom.Map = function(container, map) {
    * @private
    */
   this.layersPane_ = goog.dom.createElement(goog.dom.TagName.DIV);
-  this.layersPane_.className = 'ol-layers-pane ol-unselectable';
+  this.layersPane_.className = 'ol-layers ol-unselectable';
   var style = this.layersPane_.style;
   style.position = 'absolute';
   style.width = '100%';

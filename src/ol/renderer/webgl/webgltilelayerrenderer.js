@@ -7,16 +7,17 @@ goog.provide('ol.renderer.webgl.tilelayerrenderer.shader.Fragment');
 goog.provide('ol.renderer.webgl.tilelayerrenderer.shader.Vertex');
 
 goog.require('goog.array');
-goog.require('goog.asserts');
-goog.require('goog.events.EventType');
 goog.require('goog.object');
 goog.require('goog.structs.PriorityQueue');
 goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec4');
 goog.require('goog.webgl');
-goog.require('ol.Coordinate');
+goog.require('ol.Extent');
 goog.require('ol.FrameState');
 goog.require('ol.Size');
+goog.require('ol.Tile');
+goog.require('ol.TileCoord');
+goog.require('ol.TileRange');
 goog.require('ol.TileState');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.renderer.webgl.FragmentShader');
@@ -392,6 +393,9 @@ ol.renderer.webgl.TileLayer.prototype.renderFrame =
 
         tileState = tile.getState();
         if (tileState == ol.TileState.IDLE) {
+          goog.events.listenOnce(tile, goog.events.EventType.CHANGE,
+              this.handleTileChange, false, this);
+          this.updateWantedTiles(frameState.wantedTiles, tileSource, tileCoord);
           tileCenter = tileGrid.getTileCoordCenter(tileCoord);
           frameState.tileQueue.enqueue(tile, tileSourceKey, tileCenter);
         } else if (tileState == ol.TileState.LOADED) {
@@ -456,7 +460,6 @@ ol.renderer.webgl.TileLayer.prototype.renderFrame =
       this.renderedTileRange_ = null;
       this.renderedFramebufferExtent_ = null;
       frameState.animate = true;
-      this.updateWantedTiles(frameState.wantedTiles, tileSource, z, tileRange);
     }
 
   }

@@ -10,6 +10,7 @@ goog.require('goog.events.EventType');
 goog.require('goog.style');
 goog.require('ol.BrowserFeature');
 goog.require('ol.Coordinate');
+goog.require('ol.FrameState');
 goog.require('ol.MapEvent');
 goog.require('ol.Pixel');
 
@@ -21,10 +22,11 @@ goog.require('ol.Pixel');
  * @param {string} type Event type.
  * @param {ol.Map} map Map.
  * @param {goog.events.BrowserEvent} browserEvent Browser event.
+ * @param {?ol.FrameState=} opt_frameState Frame state.
  */
-ol.MapBrowserEvent = function(type, map, browserEvent) {
+ol.MapBrowserEvent = function(type, map, browserEvent, opt_frameState) {
 
-  goog.base(this, type, map);
+  goog.base(this, type, map, opt_frameState);
 
   /**
    * @type {goog.events.BrowserEvent}
@@ -230,6 +232,9 @@ ol.MapBrowserEventHandler.prototype.handleUp_ = function(browserEvent) {
  * @private
  */
 ol.MapBrowserEventHandler.prototype.handleDown_ = function(browserEvent) {
+  var newEvent = new ol.MapBrowserEvent(
+      ol.MapBrowserEvent.EventType.DOWN, this.map_, browserEvent);
+  this.dispatchEvent(newEvent);
   if (!this.previous_) {
     this.touchEnableBrowserEvent_(browserEvent);
     this.down_ = browserEvent;
@@ -306,5 +311,6 @@ ol.MapBrowserEvent.EventType = {
   DBLCLICK: goog.events.EventType.DBLCLICK,
   DRAGSTART: 'dragstart',
   DRAG: 'drag',
-  DRAGEND: 'dragend'
+  DRAGEND: 'dragend',
+  DOWN: 'down'
 };

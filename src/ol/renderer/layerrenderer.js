@@ -4,9 +4,14 @@ goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('ol.FrameState');
 goog.require('ol.Object');
+goog.require('ol.Tile');
+goog.require('ol.TileCoord');
 goog.require('ol.TileRange');
+goog.require('ol.TileState');
 goog.require('ol.layer.Layer');
 goog.require('ol.layer.LayerProperty');
+goog.require('ol.layer.LayerState');
+goog.require('ol.source.Source');
 goog.require('ol.source.TileSource');
 
 
@@ -65,6 +70,14 @@ goog.inherits(ol.renderer.Layer, ol.Object);
 
 
 /**
+ * @protected
+ */
+ol.renderer.Layer.prototype.dispatchChangeEvent = function() {
+  this.dispatchEvent(goog.events.EventType.CHANGE);
+};
+
+
+/**
  * @return {ol.layer.Layer} Layer.
  */
 ol.renderer.Layer.prototype.getLayer = function() {
@@ -109,13 +122,17 @@ ol.renderer.Layer.prototype.handleLayerHueChange = goog.nullFunction;
 /**
  * @protected
  */
-ol.renderer.Layer.prototype.handleLayerLoad = goog.nullFunction;
+ol.renderer.Layer.prototype.handleLayerLoad = function() {
+  this.dispatchChangeEvent();
+};
 
 
 /**
  * @protected
  */
-ol.renderer.Layer.prototype.handleLayerOpacityChange = goog.nullFunction;
+ol.renderer.Layer.prototype.handleLayerOpacityChange = function() {
+  this.dispatchChangeEvent();
+};
 
 
 /**
@@ -127,7 +144,29 @@ ol.renderer.Layer.prototype.handleLayerSaturationChange = goog.nullFunction;
 /**
  * @protected
  */
-ol.renderer.Layer.prototype.handleLayerVisibleChange = goog.nullFunction;
+ol.renderer.Layer.prototype.handleLayerVisibleChange = function() {
+  this.dispatchChangeEvent();
+};
+
+
+/**
+ * Handle changes in tile state.
+ * @param {goog.events.Event} event Tile change event.
+ * @protected
+ */
+ol.renderer.Layer.prototype.handleTileChange = function(event) {
+  var tile = /** @type {ol.Tile} */ (event.target);
+  if (tile.getState() === ol.TileState.LOADED) {
+    this.getMap().requestRenderFrame();
+  }
+};
+
+
+/**
+ * @param {ol.FrameState} frameState Frame state.
+ * @param {ol.layer.LayerState} layerState Layer state.
+ */
+ol.renderer.Layer.prototype.renderFrame = goog.abstractMethod;
 
 
 /**
@@ -174,24 +213,16 @@ ol.renderer.Layer.prototype.updateUsedTiles =
 
 /**
  * @protected
- * @param {Object.<string, Object.<string, ol.TileRange>>} wantedTiles Wanted
- *     tile ranges.
+ * @param {Object.<string, Object.<string, boolean>>} wantedTiles Wanted tiles.
  * @param {ol.source.Source} source Source.
- * @param {number} z Z.
- * @param {ol.TileRange} tileRange Tile range.
+ * @param {ol.TileCoord} tileCoord Tile coordinate.
  */
 ol.renderer.Layer.prototype.updateWantedTiles =
-    function(wantedTiles, source, z, tileRange) {
+    function(wantedTiles, source, tileCoord) {
   var sourceKey = goog.getUid(source).toString();
-  var zKey = z.toString();
-  if (sourceKey in wantedTiles) {
-    if (zKey in wantedTiles[sourceKey]) {
-      wantedTiles[sourceKey][zKey].extend(tileRange);
-    } else {
-      wantedTiles[sourceKey][zKey] = tileRange;
-    }
-  } else {
+  var coordKey = tileCoord.toString();
+  if (!(sourceKey in wantedTiles)) {
     wantedTiles[sourceKey] = {};
-    wantedTiles[sourceKey][zKey] = tileRange;
   }
+  wantedTiles[sourceKey][coordKey] = true;
 };

@@ -5,22 +5,21 @@ goog.provide('ol.renderer.webgl.map.shader');
 
 goog.require('goog.array');
 goog.require('goog.debug.Logger');
-goog.require('goog.dispose');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.events');
 goog.require('goog.events.Event');
-goog.require('goog.events.EventType');
 goog.require('goog.style');
 goog.require('goog.webgl');
+goog.require('ol.FrameState');
+goog.require('ol.Size');
 goog.require('ol.Tile');
-goog.require('ol.layer.Layer');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.renderer.Map');
 goog.require('ol.renderer.webgl.FragmentShader');
 goog.require('ol.renderer.webgl.TileLayer');
 goog.require('ol.renderer.webgl.VertexShader');
-goog.require('ol.structs.LinkedMap');
+goog.require('ol.structs.LRUCache');
 goog.require('ol.webgl');
 goog.require('ol.webgl.WebGLContextEventType');
 
@@ -184,9 +183,9 @@ ol.renderer.webgl.Map = function(container, map) {
 
   /**
    * @private
-   * @type {ol.structs.LinkedMap}
+   * @type {ol.structs.LRUCache}
    */
-  this.textureCache_ = new ol.structs.LinkedMap(undefined, true);
+  this.textureCache_ = new ol.structs.LRUCache();
 
   /**
    * @private
@@ -205,12 +204,6 @@ ol.renderer.webgl.Map = function(container, map) {
    * @type {ol.renderer.webgl.VertexShader}
    */
   this.vertexShader_ = ol.renderer.webgl.map.shader.Vertex.getInstance();
-
-  /**
-   * @private
-   * @type {Object.<number, null|number>}
-   */
-  this.layerRendererChangeListenKeys_ = {};
 
   this.initializeGL_();
 
@@ -413,15 +406,6 @@ ol.renderer.webgl.Map.prototype.getShader = function(shaderObject) {
  * @param {goog.events.Event} event Event.
  * @protected
  */
-ol.renderer.webgl.Map.prototype.handleLayerRendererChange = function(event) {
-  this.getMap().render();
-};
-
-
-/**
- * @param {goog.events.Event} event Event.
- * @protected
- */
 ol.renderer.webgl.Map.prototype.handleWebGLContextLost = function(event) {
   if (goog.DEBUG) {
     this.logger.info('WebGLContextLost');
@@ -481,20 +465,6 @@ ol.renderer.webgl.Map.prototype.removeLayer = function(layer) {
   if (layer.getVisible()) {
     this.getMap().render();
   }
-};
-
-
-/**
- * @inheritDoc
- */
-ol.renderer.webgl.Map.prototype.removeLayerRenderer = function(layer) {
-  var layerRenderer = goog.base(this, 'removeLayerRenderer', layer);
-  if (!goog.isNull(layerRenderer)) {
-    var layerKey = goog.getUid(layer);
-    goog.events.unlistenByKey(this.layerRendererChangeListenKeys_[layerKey]);
-    delete this.layerRendererChangeListenKeys_[layerKey];
-  }
-  return layerRenderer;
 };
 
 
@@ -603,17 +573,4 @@ ol.renderer.webgl.Map.prototype.renderFrame = function(frameState) {
     frameState.postRenderFunctions.push(goog.bind(this.expireCache_, this));
   }
 
-};
-
-
-/**
- * @inheritDoc
- */
-ol.renderer.webgl.Map.prototype.setLayerRenderer = function(
-    layer, layerRenderer) {
-  goog.base(this, 'setLayerRenderer', layer, layerRenderer);
-  var layerKey = goog.getUid(layer);
-  this.layerRendererChangeListenKeys_[layerKey] = goog.events.listen(
-      layerRenderer, goog.events.EventType.CHANGE,
-      this.handleLayerRendererChange, false, this);
 };
