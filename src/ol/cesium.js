@@ -2,6 +2,14 @@ goog.provide('ol.Cesium');
 goog.provide('ol.CesiumProperty');
 
 goog.require('goog.debug.Logger');
+goog.require('ol.Collection');
+goog.require('ol.Color');
+goog.require('ol.Coordinate');
+goog.require('ol.IView');
+goog.require('ol.Object');
+goog.require('ol.Size');
+goog.require('ol.View');
+goog.require('ol.View2D');
 
 
 /**

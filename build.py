@@ -48,7 +48,8 @@ EXAMPLES = [path
             for path in ifind('examples')
             if not path.startswith('examples/standalone/')
             if path.endswith('.html')
-            if path != 'examples/example-list.html']
+            if path != 'examples/example-list.html'
+            if not path.startswith('examples/cesium/')]
 
 EXAMPLES_JSON = [example.replace('.html', '.json')
                  for example in EXAMPLES]
