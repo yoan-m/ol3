@@ -63,6 +63,8 @@ goog.require('ol.renderer.dom.Map');
 goog.require('ol.renderer.dom.isSupported');
 goog.require('ol.renderer.webgl.Map');
 goog.require('ol.renderer.webgl.isSupported');
+goog.require('ol.renderer.cesium.Map');
+goog.require('ol.renderer.cesium.isSupported');
 
 
 /**
@@ -89,7 +91,8 @@ ol.ENABLE_WEBGL = true;
 ol.RendererHint = {
   CANVAS: 'canvas',
   DOM: 'dom',
-  WEBGL: 'webgl'
+  WEBGL: 'webgl',
+  CESIUM: 'cesium'
 };
 
 
@@ -99,7 +102,8 @@ ol.RendererHint = {
 ol.DEFAULT_RENDERER_HINTS = [
   ol.RendererHint.WEBGL,
   ol.RendererHint.CANVAS,
-  ol.RendererHint.DOM
+  ol.RendererHint.DOM,
+  ol.RendererHint.CESIUM
 ];
 
 
@@ -869,6 +873,11 @@ ol.Map.createOptionsInternal = function(mapOptions) {
     } else if (rendererHint == ol.RendererHint.WEBGL) {
       if (ol.ENABLE_WEBGL && ol.renderer.webgl.isSupported()) {
         rendererConstructor = ol.renderer.webgl.Map;
+        break;
+      }
+    } else if (rendererHint == ol.RendererHint.CESIUM) {
+      if (ol.ENABLE_WEBGL && ol.renderer.cesium.isSupported()) {
+        rendererConstructor = ol.renderer.cesium.Map;
         break;
       }
     }

@@ -161,10 +161,15 @@ Cesium.CompositePrimitive = function() {};
 
 
 /**
+ * @return {Cesium.CentralBody}
+ */
+Cesium.CompositePrimitive.prototype.getCentralBody = function() {};
+
+
+/**
  * @param {Cesium.CentralBody} centralBody
  */
-Cesium.CompositePrimitive.prototype.setCentralBody =
-    function(centralBody) {};
+Cesium.CompositePrimitive.prototype.setCentralBody = function(centralBody) {};
 
 
 
@@ -186,6 +191,34 @@ Cesium.DefaultProxy = function(proxy) {};
 /**
  * @constructor
  */
+Cesium.Event = function() {};
+
+
+
+/**
+ * @constructor
+ */
+Cesium.GeographicTilingScheme = function() {};
+
+
+/**
+ * @return {Cesium.Extent}
+ */
+Cesium.GeographicTilingScheme.prototype.getExtent = function() {};
+
+
+
+/**
+ * @constructor
+ * @param {Cesium.ImageryProvider} imageryProvider
+ */
+Cesium.ImageryLayer = function(imageryProvider) {};
+
+
+
+/**
+ * @constructor
+ */
 Cesium.ImageryLayerCollection = function() {};
 
 
@@ -195,11 +228,99 @@ Cesium.ImageryLayerCollection = function() {};
 Cesium.ImageryLayerCollection.prototype.addImageryProvider = function(provider) {};
 
 
+/**
+ * @param {Cesium.ImageryLayer} layer
+ */
+Cesium.ImageryLayerCollection.prototype.add = function(layer) {};
+
+
+/**
+ * @param {Cesium.ImageryLayer} layer
+ * @param {boolean} destroy
+ */
+Cesium.ImageryLayerCollection.prototype.remove = function(layer, destroy) {};
+
+
 
 /**
  * @constructor
  */
 Cesium.ImageryProvider = function() {};
+
+
+/**
+ * @returns {boolean}
+ */
+Cesium.ImageryProvider.prototype.isReady = function() {};
+
+
+/**
+ * @returns {Cesium.Extent}
+ */
+Cesium.ImageryProvider.prototype.getExtent = function() {};
+
+
+/**
+ * @returns {number}
+ */
+Cesium.ImageryProvider.prototype.getTileWidth = function() {};
+
+
+/**
+ * @returns {number}
+ */
+Cesium.ImageryProvider.prototype.getTileHeight = function() {};
+
+
+/**
+ * @returns {number}
+ */
+Cesium.ImageryProvider.prototype.getMaximumLevel = function() {};
+
+
+/**
+ *  //@return {TilingScheme} The tiling scheme.
+ *  // TODO
+ *  @return {Cesium.GeographicTilingScheme}
+ *  //@return {Cesium.WebMercatorTilingScheme}
+ */
+Cesium.ImageryProvider.prototype.getTilingScheme = function() {};
+
+
+/**
+ * //@returns {TileDiscardPolicy} The discard policy.
+ * // TODO
+ * @return {undefined}
+ */
+Cesium.ImageryProvider.prototype.getTileDiscardPolicy = function() {};
+
+
+/**
+ * @return {Cesium.Event} The event.
+ */
+Cesium.ImageryProvider.prototype.getErrorEvent = function() {};
+
+
+/**
+ * @return {HTMLImageElement|HTMLCanvasElement|undefined} A canvas or image containing the log to display, or undefined if there is no logo.
+ */
+Cesium.ImageryProvider.prototype.getLogo = function() {};
+
+
+/**
+ * @param {number} x The tile X coordinate.
+ * @param {number} y The tile Y coordinate.
+ * @param {number} level The tile level.
+ * @return {Object|undefined} 
+ */
+Cesium.ImageryProvider.prototype.requestImage = function(x, y, level) {};
+
+
+/**
+ * @param {string} url
+ * @return {Object}
+ */
+Cesium.ImageryProvider.loadImage = function(url) {};
 
 
 
@@ -235,8 +356,19 @@ Cesium.Ellipsoid.prototype.cartesianToCartographic = function(cartesian, result)
 
 /**
  * @constructor
+ * @param {number} west
+ * @param {number} south
+ * @param {number} east
+ * @param {number} north
  */
-Cesium.FeatureDetection = function() {}
+Cesium.Extent = function(west, south, east, north) {};
+
+
+
+/**
+ * @constructor
+ */
+Cesium.FeatureDetection = function() {};
 
 
 /**
@@ -399,9 +531,20 @@ Cesium.Scene.prototype.render = function() {};
 
 
 /**
+ */
+Cesium.Scene.prototype.destroy = function() {};
+
+
+/**
  * @type {Cesium.SceneMode}
  */
 Cesium.Scene.prototype.mode;
+
+
+/**
+ * @type {Object}
+ */
+Cesium.Scene.prototype.scene2D;
 
 
 /**
@@ -538,3 +681,18 @@ Cesium.WebMercatorProjection.prototype.project = function(cartographic) {};
  * @return {Cesium.Cartographic}
  */
 Cesium.WebMercatorProjection.prototype.unproject = function(cartesian) {};
+
+
+
+/**
+ * @constructor
+ */
+Cesium.WebMercatorTilingScheme = function() {};
+
+
+/**
+ * @return {Cesium.Extent}
+ */
+Cesium.WebMercatorTilingScheme.prototype.getExtent = function() {};
+
+
