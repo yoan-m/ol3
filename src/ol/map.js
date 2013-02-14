@@ -59,12 +59,12 @@ goog.require('ol.layer.Layer');
 goog.require('ol.renderer.Map');
 goog.require('ol.renderer.canvas.Map');
 goog.require('ol.renderer.canvas.isSupported');
+goog.require('ol.renderer.cesium.Map');
+goog.require('ol.renderer.cesium.isSupported');
 goog.require('ol.renderer.dom.Map');
 goog.require('ol.renderer.dom.isSupported');
 goog.require('ol.renderer.webgl.Map');
 goog.require('ol.renderer.webgl.isSupported');
-goog.require('ol.renderer.cesium.Map');
-goog.require('ol.renderer.cesium.isSupported');
 
 
 /**

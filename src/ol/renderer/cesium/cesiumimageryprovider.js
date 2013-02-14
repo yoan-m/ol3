@@ -2,6 +2,8 @@ goog.provide('ol.renderer.cesium.ImageryProvider');
 
 goog.require('ol.TileCoord');
 
+
+
 /**
  * @constructor
  * @extends {Cesium.ImageryProvider}
@@ -22,91 +24,103 @@ ol.renderer.cesium.ImageryProvider = function(source) {
 };
 goog.inherits(ol.renderer.cesium.ImageryProvider, Cesium.ImageryProvider);
 
+
 /**
- * @return {boolean}
+ * @return {boolean} True if the source is ready to use; otherwise, false.
  */
 ol.renderer.cesium.ImageryProvider.prototype.isReady = function() {
   return this.source_.isReady();
 };
 
+
 /**
- * @return {Cesium.Extent}
+ * @return {Cesium.Extent} The extent.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getExtent = function() {
   return this.getTilingScheme().getExtent();
 };
 
+
 /**
- * @return {number}
+ * @return {number} The width.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getTileWidth = function() {
   // TODO this is wrong
   return 256;
 };
 
+
 /**
- * @return {number}
+ * @return {number} The height.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getTileHeight = function() {
   // TODO the is wrong too
   return 256;
 };
 
+
 /**
- * @return {number}
+ * @return {number} The maximum level, or undefined if there is no maximum level.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getMaximumLevel = function() {
   // TODO this is probably wrong too
   return this.source_.getResolutions().length;
 };
 
+
 /**
  *  // TODO change return type
- *  //@return {Cesium.GeographicTilingScheme}
- *  @return {Cesium.WebMercatorTilingScheme}
+ *  @return {Cesium.WebMercatorTilingScheme} The tiling scheme.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getTilingScheme = function() {
   // TODO figure out mapping between projections and tiling schemes
   //var code = this.source_.getProjection().getCode();
-  //return new Cesium.GeographicTilingScheme();
   return new Cesium.WebMercatorTilingScheme();
 };
 
+
 /**
  * // TODO change return type
- * @return {undefined}
+ * @return {undefined} The discard policy.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getTileDiscardPolicy = function() {
   // TODO
   return undefined;
 };
 
+
 /**
- * @return {Cesium.Event}
+ * @return {Cesium.Event} The event.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getErrorEvent = function() {
   return this.event_;
 };
 
+
 /**
- * // TODO change return type
- * @return {HTMLImageElement|HTMLCanvasElement|undefined}
+ * @return {HTMLImageElement|HTMLCanvasElement|undefined} A canvas or 
+ * image containing the log to display, or undefined if there is no logo.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getLogo = function() {
   // TODO
   return undefined;
 };
 
+
 /**
- * @param {number} x
- * @param {number} y
- * @param {number} level
- * @return {Object|undefined}
+ * @param {number} x The tile x coordinate.
+ * @param {number} y The tile y coordinate.
+ * @param {number} level The tile level.
+ * @return {Object|undefined} A promise for the image that will resolve 
+ * when the image is available, or undefined if there are too many active 
+ * requests to the server, and the request should be retried later. 
+ * The resolved image may be either an Image or a Canvas DOM object.
  */
 ol.renderer.cesium.ImageryProvider.prototype.requestImage = function(x, y, level) {
-  var url = this.source_.getTileCoordUrl(new ol.TileCoord(level, x, -y - 1));
+  var coord = new ol.TileCoord(level, x, -y - 1);
+  var url = this.source_.getTileCoordUrl(coord);
   if (typeof url !== 'undefined') {
-	  return Cesium.ImageryProvider.loadImage(url);
+    return Cesium.ImageryProvider.loadImage(url);
   }
   return undefined;
 };
