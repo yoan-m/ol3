@@ -48,7 +48,7 @@ ol.renderer.cesium.Map = function(container, map) {
 
   // TODO get correct projection
   this.scene_.scene2D.projection = new Cesium.WebMercatorProjection(ellipsoid);
-  
+
   // TODO get tile size
   var TILE_SIZE = 256;
 

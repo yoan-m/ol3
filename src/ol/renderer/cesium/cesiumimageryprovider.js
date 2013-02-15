@@ -15,7 +15,7 @@ ol.renderer.cesium.ImageryProvider = function(source) {
    * @type {ol.source.ImageTileSource}
    */
   this.source_ = source;
-  
+
   /**
    * @private
    * @type {Cesium.Event}
@@ -98,7 +98,7 @@ ol.renderer.cesium.ImageryProvider.prototype.getErrorEvent = function() {
 
 
 /**
- * @return {HTMLImageElement|HTMLCanvasElement|undefined} A canvas or 
+ * @return {HTMLImageElement|HTMLCanvasElement|undefined} A canvas or
  * image containing the log to display, or undefined if there is no logo.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getLogo = function() {
@@ -111,9 +111,9 @@ ol.renderer.cesium.ImageryProvider.prototype.getLogo = function() {
  * @param {number} x The tile x coordinate.
  * @param {number} y The tile y coordinate.
  * @param {number} level The tile level.
- * @return {Object|undefined} A promise for the image that will resolve 
- * when the image is available, or undefined if there are too many active 
- * requests to the server, and the request should be retried later. 
+ * @return {Object|undefined} A promise for the image that will resolve
+ * when the image is available, or undefined if there are too many active
+ * requests to the server, and the request should be retried later.
  * The resolved image may be either an Image or a Canvas DOM object.
  */
 ol.renderer.cesium.ImageryProvider.prototype.requestImage = function(x, y, level) {
