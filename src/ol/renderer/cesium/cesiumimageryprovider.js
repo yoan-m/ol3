@@ -16,17 +16,17 @@ ol.renderer.cesium.ImageryProvider = function(source) {
    * @type {ol.source.ImageTileSource}
    */
   this.source_ = source;
-  //TODO for some reason these functions are being stripped out even with the exports
-  //file. Need to revisit for correct fix.
-  this.hack_={
-          isReady:this.isReady,
-          tileWidth:this.getTileWidth,
-          tileHeight:this.getTileHeight,
-          maximumLevel:this.getMaximumLevel,
-          tileDiscardPolicy:this.getTileDiscardPolicy,
-          errorEvent:this.getErrorEvent,
-          logo:this.getLogo,
-          requestImage:this.requestImage
+  //TODO for some reason these functions are being stripped out even with
+  //the exports file. Need to revisit for correct fix.
+  this.hack_ = {
+    isReady: this.isReady,
+    tileWidth: this.getTileWidth,
+    tileHeight: this.getTileHeight,
+    maximumLevel: this.getMaximumLevel,
+    tileDiscardPolicy: this.getTileDiscardPolicy,
+    errorEvent: this.getErrorEvent,
+    logo: this.getLogo,
+    requestImage: this.requestImage
   };
   /**
    * @private
