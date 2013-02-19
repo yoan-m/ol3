@@ -7,8 +7,8 @@
 @exportProperty ol.RendererHint.CANVAS
 @exportProperty ol.RendererHint.DOM
 @exportProperty ol.RendererHint.WEBGL
+@exportProperty ol.RendererHint.CESIUM
 
 @exportSymbol ol.RendererHints
 @exportProperty ol.RendererHints.createFromQueryData
 
-@exportClass ol.Cesium ol.CesiumOptions

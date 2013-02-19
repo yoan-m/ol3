@@ -3,6 +3,7 @@ goog.provide('ol.renderer.cesium.Map');
 goog.require('goog.debug.Logger');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
+goog.require('ol.Coordinate');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.renderer.Map');
 goog.require('ol.renderer.cesium.Layer');
@@ -48,7 +49,12 @@ ol.renderer.cesium.Map = function(container, map) {
 
   // TODO get correct projection
   this.scene_.scene2D.projection = new Cesium.WebMercatorProjection(ellipsoid);
-
+  this.scene_._screenSpaceCameraController =
+      this.scene_._screenSpaceCameraController &&
+      this.scene_._screenSpaceCameraController.destroy();
+  this.scene_._screenSpaceCameraController = {
+    update: function() {}
+  };
   // TODO get tile size
   var TILE_SIZE = 256;
 
@@ -64,10 +70,7 @@ ol.renderer.cesium.Map = function(container, map) {
 
     var center = view.getCenter();
     var positionCart = projection.unproject(center);
-    positionCart.longitude = Cesium.Math.clamp(positionCart.longitude,
-                                 -Math.PI, Math.PI);
-    positionCart.latitude = Cesium.Math.clamp(positionCart.latitude,
-                                 -Cesium.Math.PI_OVER_TWO, Cesium.Math.PI_OVER_TWO);
+
     positionCart.height = view.getResolution() * TILE_SIZE;
     ellipsoid.cartographicToCartesian(positionCart, camera.position);
     Cesium.Cartesian3.negate(camera.position, camera.direction);
@@ -126,7 +129,7 @@ ol.renderer.cesium.Map.prototype.getCanvas = function() {
 
 
 /**
- * @return {Cesium.Scene}
+ * @return {Cesium.Scene} Cesium's scene.
  */
 ol.renderer.cesium.Map.prototype.getScene = function() {
   return this.scene_;
@@ -149,7 +152,11 @@ ol.renderer.cesium.Map.prototype.createLayerRenderer = function(layer) {
 /**
  * @inheritDoc
  */
-ol.renderer.cesium.Map.prototype.renderFrame = goog.nullFunction;
+ol.renderer.cesium.Map.prototype.renderFrame = function(frameState) {
+  if (!goog.isNull(frameState)) {
+    this.calculateMatrices2D(frameState);
+  }
+};
 
 
 /**

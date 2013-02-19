@@ -1,6 +1,7 @@
 goog.provide('ol.renderer.cesium.ImageryProvider');
 
 goog.require('ol.TileCoord');
+goog.require('ol.source.ImageTileSource');
 
 
 
@@ -15,7 +16,18 @@ ol.renderer.cesium.ImageryProvider = function(source) {
    * @type {ol.source.ImageTileSource}
    */
   this.source_ = source;
-
+  //TODO for some reason these functions are being stripped out even with the exports
+  //file. Need to revisit for correct fix.
+  this.hack_={
+          isReady:this.isReady,
+          tileWidth:this.getTileWidth,
+          tileHeight:this.getTileHeight,
+          maximumLevel:this.getMaximumLevel,
+          tileDiscardPolicy:this.getTileDiscardPolicy,
+          errorEvent:this.getErrorEvent,
+          logo:this.getLogo,
+          requestImage:this.requestImage
+  };
   /**
    * @private
    * @type {Cesium.Event}
@@ -60,7 +72,8 @@ ol.renderer.cesium.ImageryProvider.prototype.getTileHeight = function() {
 
 
 /**
- * @return {number} The maximum level, or undefined if there is no maximum level.
+ * @return {number} The maximum level, or undefined if there is
+ * no maximum level.
  */
 ol.renderer.cesium.ImageryProvider.prototype.getMaximumLevel = function() {
   // TODO this is probably wrong too
@@ -116,7 +129,8 @@ ol.renderer.cesium.ImageryProvider.prototype.getLogo = function() {
  * requests to the server, and the request should be retried later.
  * The resolved image may be either an Image or a Canvas DOM object.
  */
-ol.renderer.cesium.ImageryProvider.prototype.requestImage = function(x, y, level) {
+ol.renderer.cesium.ImageryProvider.prototype.requestImage =
+    function(x, y, level) {
   var coord = new ol.TileCoord(level, x, -y - 1);
   var url = this.source_.getTileCoordUrl(coord);
   if (typeof url !== 'undefined') {

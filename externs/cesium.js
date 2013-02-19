@@ -1,3 +1,7 @@
+/**
+ * @externs
+ * @see http://cesium.agi.com/
+ */
 var Cesium = {};
 
 
@@ -214,6 +218,11 @@ Cesium.GeographicTilingScheme.prototype.getExtent = function() {};
  */
 Cesium.ImageryLayer = function(imageryProvider) {};
 
+/**
+ * @return {Cesium.ImageryProvider} provider
+ */
+Cesium.ImageryLayer.prototype.getImageryProvider = function() {};
+
 
 
 /**
@@ -249,31 +258,31 @@ Cesium.ImageryProvider = function() {};
 
 
 /**
- * @returns {boolean}
+ * @return {boolean}
  */
 Cesium.ImageryProvider.prototype.isReady = function() {};
 
 
 /**
- * @returns {Cesium.Extent}
+ * @return {Cesium.Extent}
  */
 Cesium.ImageryProvider.prototype.getExtent = function() {};
 
 
 /**
- * @returns {number}
+ * @return {number}
  */
 Cesium.ImageryProvider.prototype.getTileWidth = function() {};
 
 
 /**
- * @returns {number}
+ * @return {number}
  */
 Cesium.ImageryProvider.prototype.getTileHeight = function() {};
 
 
 /**
- * @returns {number}
+ * @return {number}
  */
 Cesium.ImageryProvider.prototype.getMaximumLevel = function() {};
 
@@ -281,8 +290,8 @@ Cesium.ImageryProvider.prototype.getMaximumLevel = function() {};
 /**
  *  //@return {TilingScheme} The tiling scheme.
  *  // TODO
- *  @return {Cesium.GeographicTilingScheme}
- *  //@return {Cesium.WebMercatorTilingScheme}
+ *  //@return {Cesium.GeographicTilingScheme}
+ *  @return {Cesium.WebMercatorTilingScheme}
  */
 Cesium.ImageryProvider.prototype.getTilingScheme = function() {};
 
