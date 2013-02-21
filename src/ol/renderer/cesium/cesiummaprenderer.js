@@ -3,7 +3,6 @@ goog.provide('ol.renderer.cesium.Map');
 goog.require('goog.debug.Logger');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
-goog.require('ol.Coordinate');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.renderer.Map');
 goog.require('ol.renderer.cesium.Layer');

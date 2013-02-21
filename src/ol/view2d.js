@@ -56,7 +56,7 @@ ol.View2D = function(opt_view2DOptions) {
         projectionExtent.maxX - projectionExtent.minX,
         projectionExtent.maxY - projectionExtent.minY);
     values[ol.View2DProperty.RESOLUTION] =
-        size / (ol.DEFAULT_TILE_SIZE << view2DOptions.zoom);
+        size / (ol.DEFAULT_TILE_SIZE * Math.pow(2, view2DOptions.zoom));
   }
   values[ol.View2DProperty.ROTATION] = view2DOptions.rotation;
   this.setValues(values);
@@ -256,11 +256,26 @@ goog.exportProperty(
 /**
  * @param {ol.Map} map Map.
  * @param {number|undefined} rotation Rotation.
- * @param {number} delta Delta.
+ * @param {ol.Coordinate=} opt_anchor Anchor coordinate.
  */
-ol.View2D.prototype.rotate = function(map, rotation, delta) {
-  rotation = this.constraints_.rotation(rotation, delta);
-  this.setRotation(rotation);
+ol.View2D.prototype.rotate = function(map, rotation, opt_anchor) {
+  rotation = this.constraints_.rotation(rotation, 0);
+  if (goog.isDefAndNotNull(opt_anchor)) {
+    var anchor = opt_anchor;
+    var oldCenter = /** @type {!ol.Coordinate} */ (this.getCenter());
+    var center = new ol.Coordinate(
+        oldCenter.x - anchor.x,
+        oldCenter.y - anchor.y);
+    center.rotate(rotation - this.getRotation());
+    center.x += anchor.x;
+    center.y += anchor.y;
+    map.withFrozenRendering(function() {
+      this.setCenter(center);
+      this.setRotation(rotation);
+    }, this);
+  } else {
+    this.setRotation(rotation);
+  }
 };
 
 

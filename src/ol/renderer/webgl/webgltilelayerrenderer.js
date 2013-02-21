@@ -139,7 +139,13 @@ ol.renderer.webgl.TileLayer = function(mapRenderer, tileLayer) {
    * @private
    * @type {!goog.vec.Mat4.Number}
    */
-  this.matrix_ = goog.vec.Mat4.createNumber();
+  this.texCoordMatrix_ = goog.vec.Mat4.createNumber();
+
+  /**
+   * @private
+   * @type {!goog.vec.Mat4.Number}
+   */
+  this.vertexCoordMatrix_ = goog.vec.Mat4.createNumberIdentity();
 
   /**
    * @private
@@ -224,8 +230,8 @@ ol.renderer.webgl.TileLayer.prototype.disposeInternal = function() {
 /**
  * @inheritDoc
  */
-ol.renderer.webgl.TileLayer.prototype.getMatrix = function() {
-  return this.matrix_;
+ol.renderer.webgl.TileLayer.prototype.getTexCoordMatrix = function() {
+  return this.texCoordMatrix_;
 };
 
 
@@ -234,6 +240,14 @@ ol.renderer.webgl.TileLayer.prototype.getMatrix = function() {
  */
 ol.renderer.webgl.TileLayer.prototype.getTexture = function() {
   return this.texture_;
+};
+
+
+/**
+ * @inheritDoc
+ */
+ol.renderer.webgl.TileLayer.prototype.getVertexCoordMatrix = function() {
+  return this.vertexCoordMatrix_;
 };
 
 
@@ -351,32 +365,12 @@ ol.renderer.webgl.TileLayer.prototype.renderFrame =
     var tilesToDrawByZ = {};
     tilesToDrawByZ[z] = {};
 
-    var findInterimTiles = function(z, tileRange) {
-      // FIXME this could be more efficient about filling partial holes
-      var fullyCovered = true;
-      var tile, tileCoord, tileCoordKey, x, y;
-      for (x = tileRange.minX; x <= tileRange.maxX; ++x) {
-        for (y = tileRange.minY; y <= tileRange.maxY; ++y) {
-          tileCoord = new ol.TileCoord(z, x, y);
-          tileCoordKey = tileCoord.toString();
-          if (tilesToDrawByZ[z] && tilesToDrawByZ[z][tileCoordKey]) {
-            return;
-          }
-          tile = tileSource.getTile(tileCoord);
-          if (!goog.isNull(tile) &&
-              tile.getState() == ol.TileState.LOADED &&
-              mapRenderer.isTileTextureLoaded(tile)) {
-            if (!tilesToDrawByZ[z]) {
-              tilesToDrawByZ[z] = {};
-            }
-            tilesToDrawByZ[z][tileCoordKey] = tile;
-          } else {
-            fullyCovered = false;
-          }
-        }
-      }
-      return fullyCovered;
-    };
+    function isLoaded(tile) {
+      return !goog.isNull(tile) && tile.getState() == ol.TileState.LOADED &&
+          mapRenderer.isTileTextureLoaded(tile);
+    }
+    var findLoadedTiles = goog.bind(tileSource.findLoadedTiles, tileSource,
+        tilesToDrawByZ, isLoaded);
 
     var tilesToLoad = new goog.structs.PriorityQueue();
 
@@ -414,7 +408,7 @@ ol.renderer.webgl.TileLayer.prototype.renderFrame =
         }
 
         allTilesLoaded = false;
-        tileGrid.forEachTileCoordParentTileRange(tileCoord, findInterimTiles);
+        tileGrid.forEachTileCoordParentTileRange(tileCoord, findLoadedTiles);
 
       }
 
@@ -467,21 +461,21 @@ ol.renderer.webgl.TileLayer.prototype.renderFrame =
   this.updateUsedTiles(frameState.usedTiles, tileSource, z, tileRange);
   this.scheduleExpireCache(frameState, tileSource);
 
-  goog.vec.Mat4.makeIdentity(this.matrix_);
-  goog.vec.Mat4.translate(this.matrix_,
+  goog.vec.Mat4.makeIdentity(this.texCoordMatrix_);
+  goog.vec.Mat4.translate(this.texCoordMatrix_,
       (view2DState.center.x - framebufferExtent.minX) /
           (framebufferExtent.maxX - framebufferExtent.minX),
       (view2DState.center.y - framebufferExtent.minY) /
           (framebufferExtent.maxY - framebufferExtent.minY),
       0);
-  goog.vec.Mat4.rotateZ(this.matrix_, view2DState.rotation);
-  goog.vec.Mat4.scale(this.matrix_,
+  goog.vec.Mat4.rotateZ(this.texCoordMatrix_, view2DState.rotation);
+  goog.vec.Mat4.scale(this.texCoordMatrix_,
       frameState.size.width * view2DState.resolution /
           (framebufferExtent.maxX - framebufferExtent.minX),
       frameState.size.height * view2DState.resolution /
           (framebufferExtent.maxY - framebufferExtent.minY),
       1);
-  goog.vec.Mat4.translate(this.matrix_,
+  goog.vec.Mat4.translate(this.texCoordMatrix_,
       -0.5,
       -0.5,
       0);

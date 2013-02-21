@@ -1,10 +1,10 @@
-goog.provide('ol.renderer.cesium.isSupported');
+goog.provide('ol.renderer.cesium.SUPPORTED');
 
 goog.require('ol.webgl');
 
 
 /**
  * // TODO: check if Cesium is supported
- * @return {boolean} Is supported.
+ * @const {boolean} Is supported.
  */
-ol.renderer.cesium.isSupported = ol.webgl.isSupported;
+ol.renderer.cesium.isSupported = ol.webgl.SUPPORTED;

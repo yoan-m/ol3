@@ -14,9 +14,11 @@ goog.require('goog.webgl');
 goog.require('ol.FrameState');
 goog.require('ol.Size');
 goog.require('ol.Tile');
+goog.require('ol.layer.ImageLayer');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.renderer.Map');
 goog.require('ol.renderer.webgl.FragmentShader');
+goog.require('ol.renderer.webgl.ImageLayer');
 goog.require('ol.renderer.webgl.TileLayer');
 goog.require('ol.renderer.webgl.VertexShader');
 goog.require('ol.structs.LRUCache');
@@ -48,15 +50,13 @@ ol.renderer.webgl.map.shader.Fragment = function() {
     '',
     'uniform mat4 uColorMatrix;',
     'uniform float uOpacity;',
-    'uniform mat4 uMatrix;',
     'uniform sampler2D uTexture;',
     '',
     'varying vec2 vTexCoord;',
     '',
     'void main(void) {',
     '',
-    '  vec4 texCoord = uMatrix * vec4(vTexCoord, 0., 1.);',
-    '  vec4 texColor = texture2D(uTexture, texCoord.st);',
+    '  vec4 texColor = texture2D(uTexture, vTexCoord);',
     '  vec4 color = uColorMatrix * vec4(texColor.rgb, 1.);',
     '  color.a = texColor.a * uOpacity;',
     '',
@@ -80,11 +80,14 @@ ol.renderer.webgl.map.shader.Vertex = function() {
     'attribute vec2 aPosition;',
     'attribute vec2 aTexCoord;',
     '',
+    'uniform mat4 uTexCoordMatrix;',
+    'uniform mat4 uVertexCoordMatrix;',
+    '',
     'varying vec2 vTexCoord;',
     '',
     'void main(void) {',
-    '  gl_Position = vec4(aPosition, 0., 1.);',
-    '  vTexCoord = aTexCoord;',
+    '  gl_Position = uVertexCoordMatrix * vec4(aPosition, 0., 1.);',
+    '  vTexCoord = (uTexCoordMatrix * vec4(aTexCoord, 0., 1.)).st;',
     '}'
   ].join('\n'));
 };
@@ -157,9 +160,10 @@ ol.renderer.webgl.Map = function(container, map) {
    * @type {{aPosition: number,
    *         aTexCoord: number,
    *         uColorMatrix: WebGLUniformLocation,
-   *         uMatrix: WebGLUniformLocation,
    *         uOpacity: WebGLUniformLocation,
-   *         uTexture: WebGLUniformLocation}|null}
+   *         uTexture: WebGLUniformLocation,
+   *         uTexCoordMatrix: WebGLUniformLocation,
+   *         uVertexCoordMatrix: WebGLUniformLocation}|null}
    */
   this.locations_ = null;
 
@@ -270,12 +274,15 @@ ol.renderer.webgl.Map.prototype.bindTileTexture =
  * @inheritDoc
  */
 ol.renderer.webgl.Map.prototype.createLayerRenderer = function(layer) {
+  var layerRenderer = null;
   if (layer instanceof ol.layer.TileLayer) {
-    return new ol.renderer.webgl.TileLayer(this, layer);
+    layerRenderer = new ol.renderer.webgl.TileLayer(this, layer);
+  } else if (layer instanceof ol.layer.ImageLayer) {
+    layerRenderer = new ol.renderer.webgl.ImageLayer(this, layer);
   } else {
     goog.asserts.assert(false);
-    return null;
   }
+  return layerRenderer;
 };
 
 
@@ -518,7 +525,8 @@ ol.renderer.webgl.Map.prototype.renderFrame = function(frameState) {
       aPosition: gl.getAttribLocation(program, 'aPosition'),
       aTexCoord: gl.getAttribLocation(program, 'aTexCoord'),
       uColorMatrix: gl.getUniformLocation(program, 'uColorMatrix'),
-      uMatrix: gl.getUniformLocation(program, 'uMatrix'),
+      uTexCoordMatrix: gl.getUniformLocation(program, 'uTexCoordMatrix'),
+      uVertexCoordMatrix: gl.getUniformLocation(program, 'uVertexCoordMatrix'),
       uOpacity: gl.getUniformLocation(program, 'uOpacity'),
       uTexture: gl.getUniformLocation(program, 'uTexture')
     };
@@ -553,7 +561,11 @@ ol.renderer.webgl.Map.prototype.renderFrame = function(frameState) {
     }
     var layerRenderer = this.getLayerRenderer(layer);
     gl.uniformMatrix4fv(
-        this.locations_.uMatrix, false, layerRenderer.getMatrix());
+        this.locations_.uTexCoordMatrix, false,
+        layerRenderer.getTexCoordMatrix());
+    gl.uniformMatrix4fv(
+        this.locations_.uVertexCoordMatrix, false,
+        layerRenderer.getVertexCoordMatrix());
     gl.uniformMatrix4fv(
         this.locations_.uColorMatrix, false, layerRenderer.getColorMatrix());
     gl.uniform1f(this.locations_.uOpacity, layer.getOpacity());
