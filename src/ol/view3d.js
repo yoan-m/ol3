@@ -148,6 +148,7 @@ goog.exportProperty(
     'getRotation',
     ol.View3D.prototype.getRotation);
 
+
 /**
  * @inheritDoc
  */
@@ -172,7 +173,6 @@ ol.View3D.prototype.getView2DState = function() {
 ol.View3D.prototype.getView3D = function() {
   return this;
 };
-
 
 
 /**
