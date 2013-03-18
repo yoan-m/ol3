@@ -5,15 +5,7 @@ goog.require('goog.events.EventType');
 goog.require('goog.functions');
 goog.require('ol.Attribution');
 goog.require('ol.Extent');
-goog.require('ol.Projection');
-
-
-/**
- * @typedef {{attributions: (Array.<ol.Attribution>|undefined),
- *            extent: (ol.Extent|undefined),
- *            projection: (ol.Projection|undefined)}}
- */
-ol.source.SourceOptions;
+goog.require('ol.projection');
 
 
 
@@ -30,15 +22,15 @@ ol.source.Source = function(sourceOptions) {
    * @private
    * @type {ol.Projection}
    */
-  this.projection_ = goog.isDef(sourceOptions.projection) ?
-      sourceOptions.projection : null;
+  this.projection_ = ol.projection.get(sourceOptions.projection);
 
   /**
    * @private
    * @type {ol.Extent}
    */
   this.extent_ = goog.isDef(sourceOptions.extent) ?
-      sourceOptions.extent : sourceOptions.projection.getExtent();
+      sourceOptions.extent : goog.isDef(sourceOptions.projection) ?
+          this.projection_.getExtent() : null;
 
   /**
    * @private

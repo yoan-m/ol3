@@ -5,18 +5,14 @@ describe('ol.source.TileSource', function() {
   describe('constructor', function() {
     it('returns a tile source', function() {
       var source = new ol.source.TileSource({
-        projection: ol.Projection.getFromCode('EPSG:4326')
+        projection: ol.projection.get('EPSG:4326')
       });
-      expect(source).toBeA(ol.source.Source);
-      expect(source).toBeA(ol.source.TileSource);
+      expect(source).to.be.a(ol.source.Source);
+      expect(source).to.be.a(ol.source.TileSource);
     });
   });
 
   describe('#findLoadedTiles()', function() {
-
-    function isLoaded(tile) {
-      return !goog.isNull(tile) && tile.getState() === ol.TileState.LOADED;
-    }
 
     it('adds no tiles if none are already loaded', function() {
       // a source with no loaded tiles
@@ -25,10 +21,16 @@ describe('ol.source.TileSource', function() {
       var loadedTilesByZ = {};
       var grid = source.getTileGrid();
       var range = grid.getTileRangeForExtentAndZ(source.getExtent(), 3);
-      source.findLoadedTiles(loadedTilesByZ, isLoaded, 3, range);
+
+      function getTileIfLoaded(tileCoord) {
+        var tile = source.getTile(tileCoord, null, null);
+        return (!goog.isNull(tile) && tile.getState() === ol.TileState.LOADED) ?
+            tile : null;
+      }
+      source.findLoadedTiles(loadedTilesByZ, getTileIfLoaded, 3, range);
 
       var keys = goog.object.getKeys(loadedTilesByZ);
-      expect(keys.length).toBe(0);
+      expect(keys.length).to.be(0);
     });
 
     it('adds loaded tiles to the lookup (z: 0)', function() {
@@ -41,12 +43,18 @@ describe('ol.source.TileSource', function() {
       var loadedTilesByZ = {};
       var grid = source.getTileGrid();
       var range = grid.getTileRangeForExtentAndZ(source.getExtent(), 0);
-      source.findLoadedTiles(loadedTilesByZ, isLoaded, 0, range);
+
+      function getTileIfLoaded(tileCoord) {
+        var tile = source.getTile(tileCoord, null, null);
+        return (!goog.isNull(tile) && tile.getState() === ol.TileState.LOADED) ?
+            tile : null;
+      }
+      source.findLoadedTiles(loadedTilesByZ, getTileIfLoaded, 0, range);
       var keys = goog.object.getKeys(loadedTilesByZ);
-      expect(keys.length).toBe(1);
+      expect(keys.length).to.be(1);
       var tile = loadedTilesByZ['0']['0/0/0'];
-      expect(tile).toBeA(ol.Tile);
-      expect(tile.state).toBe(ol.TileState.LOADED);
+      expect(tile).to.be.a(ol.Tile);
+      expect(tile.state).to.be(ol.TileState.LOADED);
     });
 
     it('adds loaded tiles to the lookup (z: 1)', function() {
@@ -59,12 +67,18 @@ describe('ol.source.TileSource', function() {
       var loadedTilesByZ = {};
       var grid = source.getTileGrid();
       var range = grid.getTileRangeForExtentAndZ(source.getExtent(), 1);
-      source.findLoadedTiles(loadedTilesByZ, isLoaded, 1, range);
+
+      function getTileIfLoaded(tileCoord) {
+        var tile = source.getTile(tileCoord, null, null);
+        return (!goog.isNull(tile) && tile.getState() === ol.TileState.LOADED) ?
+            tile : null;
+      }
+      source.findLoadedTiles(loadedTilesByZ, getTileIfLoaded, 1, range);
       var keys = goog.object.getKeys(loadedTilesByZ);
-      expect(keys.length).toBe(1);
+      expect(keys.length).to.be(1);
       var tile = loadedTilesByZ['1']['1/0/0'];
-      expect(tile).toBeA(ol.Tile);
-      expect(tile.state).toBe(ol.TileState.LOADED);
+      expect(tile).to.be.a(ol.Tile);
+      expect(tile.state).to.be(ol.TileState.LOADED);
     });
 
     it('returns true when all tiles are already loaded', function() {
@@ -79,8 +93,14 @@ describe('ol.source.TileSource', function() {
       var loadedTilesByZ = {};
       var grid = source.getTileGrid();
       var range = grid.getTileRangeForExtentAndZ(source.getExtent(), 1);
-      var loaded = source.findLoadedTiles(loadedTilesByZ, isLoaded, 1, range);
-      expect(loaded).toBe(true);
+      function getTileIfLoaded(tileCoord) {
+        var tile = source.getTile(tileCoord, null, null);
+        return (!goog.isNull(tile) && tile.getState() === ol.TileState.LOADED) ?
+            tile : null;
+      }
+      var loaded = source.findLoadedTiles(
+          loadedTilesByZ, getTileIfLoaded, 1, range);
+      expect(loaded).to.be(true);
     });
 
     it('returns true when all tiles are already loaded (part 2)', function() {
@@ -98,8 +118,15 @@ describe('ol.source.TileSource', function() {
       };
       var grid = source.getTileGrid();
       var range = grid.getTileRangeForExtentAndZ(source.getExtent(), 1);
-      var loaded = source.findLoadedTiles(loadedTilesByZ, isLoaded, 1, range);
-      expect(loaded).toBe(true);
+
+      function getTileIfLoaded(tileCoord) {
+        var tile = source.getTile(tileCoord, null, null);
+        return (!goog.isNull(tile) && tile.getState() === ol.TileState.LOADED) ?
+            tile : null;
+      }
+      var loaded = source.findLoadedTiles(
+          loadedTilesByZ, getTileIfLoaded, 1, range);
+      expect(loaded).to.be(true);
     });
 
     it('returns false when all tiles are already loaded', function() {
@@ -114,8 +141,15 @@ describe('ol.source.TileSource', function() {
       var loadedTilesByZ = {};
       var grid = source.getTileGrid();
       var range = grid.getTileRangeForExtentAndZ(source.getExtent(), 1);
-      var loaded = source.findLoadedTiles(loadedTilesByZ, isLoaded, 1, range);
-      expect(loaded).toBe(false);
+
+      function getTileIfLoaded(tileCoord) {
+        var tile = source.getTile(tileCoord, null, null);
+        return (!goog.isNull(tile) && tile.getState() === ol.TileState.LOADED) ?
+            tile : null;
+      }
+      var loaded = source.findLoadedTiles(
+          loadedTilesByZ, getTileIfLoaded, 1, range);
+      expect(loaded).to.be(false);
     });
 
     it('returns false when all tiles are already loaded (part 2)', function() {
@@ -132,8 +166,15 @@ describe('ol.source.TileSource', function() {
       };
       var grid = source.getTileGrid();
       var range = grid.getTileRangeForExtentAndZ(source.getExtent(), 1);
-      var loaded = source.findLoadedTiles(loadedTilesByZ, isLoaded, 1, range);
-      expect(loaded).toBe(false);
+
+      function getTileIfLoaded(tileCoord) {
+        var tile = source.getTile(tileCoord, null, null);
+        return (!goog.isNull(tile) && tile.getState() === ol.TileState.LOADED) ?
+            tile : null;
+      }
+      var loaded = source.findLoadedTiles(
+          loadedTilesByZ, getTileIfLoaded, 1, range);
+      expect(loaded).to.be(false);
     });
 
   });
@@ -161,7 +202,7 @@ ol.test.source.MockTileSource = function(loaded) {
 
   goog.base(this, {
     extent: extent,
-    projection: ol.Projection.getFromCode('EPSG:4326'),
+    projection: ol.projection.get('EPSG:4326'),
     tileGrid: tileGrid
   });
 
@@ -179,12 +220,9 @@ goog.inherits(ol.test.source.MockTileSource, ol.source.TileSource);
  * @inheritDoc
  */
 ol.test.source.MockTileSource.prototype.getTile = function(tileCoord) {
-  var tile = new ol.Tile(tileCoord);
   var key = tileCoord.toString();
-  if (this.loaded_[key]) {
-    tile.state = ol.TileState.LOADED;
-  }
-  return tile;
+  var tileState = this.loaded_[key] ? ol.TileState.LOADED : ol.TileState.IDLE;
+  return new ol.Tile(tileCoord, tileState);
 };
 
 
@@ -193,8 +231,8 @@ describe('ol.test.source.MockTileSource', function() {
   describe('constructor', function() {
     it('creates a tile source', function() {
       var source = new ol.test.source.MockTileSource({});
-      expect(source).toBeA(ol.source.TileSource);
-      expect(source).toBeA(ol.test.source.MockTileSource);
+      expect(source).to.be.a(ol.source.TileSource);
+      expect(source).to.be.a(ol.test.source.MockTileSource);
     });
   });
 
@@ -208,18 +246,18 @@ describe('ol.test.source.MockTileSource', function() {
 
       // check a loaded tile
       tile = source.getTile(new ol.TileCoord(0, 0, 0));
-      expect(tile).toBeA(ol.Tile);
-      expect(tile.state).toBe(ol.TileState.LOADED);
+      expect(tile).to.be.a(ol.Tile);
+      expect(tile.state).to.be(ol.TileState.LOADED);
 
       // check a tile that is not loaded
       tile = source.getTile(new ol.TileCoord(1, 0, -1));
-      expect(tile).toBeA(ol.Tile);
-      expect(tile.state).toBe(ol.TileState.IDLE);
+      expect(tile).to.be.a(ol.Tile);
+      expect(tile.state).to.be(ol.TileState.IDLE);
 
       // check another loaded tile
       tile = source.getTile(new ol.TileCoord(1, 0, 0));
-      expect(tile).toBeA(ol.Tile);
-      expect(tile.state).toBe(ol.TileState.LOADED);
+      expect(tile).to.be.a(ol.Tile);
+      expect(tile.state).to.be(ol.TileState.LOADED);
 
     });
   });
@@ -227,12 +265,13 @@ describe('ol.test.source.MockTileSource', function() {
 });
 
 goog.require('goog.object');
-
 goog.require('ol.Coordinate');
 goog.require('ol.Extent');
-goog.require('ol.Projection');
+goog.require('ol.Size');
 goog.require('ol.Tile');
 goog.require('ol.TileCoord');
 goog.require('ol.TileState');
+goog.require('ol.projection');
+goog.require('ol.source.Source');
 goog.require('ol.source.TileSource');
 goog.require('ol.tilegrid.TileGrid');

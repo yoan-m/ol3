@@ -50,7 +50,8 @@ Use the following to run the tests:
 
     $ ./build.py test
 
-This command assumes that the `phantomjs` command is on your PATH.
+This command assumes that the `phantomjs` command is on your PATH and that the
+polvr web server is running (`./build.py serve`).
 
 ### The `precommit` target
 
@@ -80,3 +81,5 @@ Basically, here's what a Git commit message should look like:
     nicely even when it's indented.
 
     Further paragraphs come after blank lines.
+
+Please keep the header line short, no more than 50 characters.

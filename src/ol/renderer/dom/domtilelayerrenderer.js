@@ -79,25 +79,38 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
   }
 
   var view2DState = frameState.view2DState;
+  var projection = view2DState.projection;
 
   var tileLayer = this.getTileLayer();
   var tileSource = tileLayer.getTileSource();
   var tileSourceKey = goog.getUid(tileSource).toString();
   var tileGrid = tileSource.getTileGrid();
+  if (goog.isNull(tileGrid)) {
+    tileGrid = ol.tilegrid.getForProjection(projection);
+  }
   var z = tileGrid.getZForResolution(view2DState.resolution);
   var tileResolution = tileGrid.getResolution(z);
+  var center = view2DState.center;
+  var extent;
+  if (tileResolution == view2DState.resolution) {
+    center = this.snapCenterToPixel(center, tileResolution, frameState.size);
+    extent = ol.Extent.getForView2DAndSize(
+        center, tileResolution, view2DState.rotation, frameState.size);
+  } else {
+    extent = frameState.extent;
+  }
   var tileRange = tileGrid.getTileRangeForExtentAndResolution(
-      frameState.extent, tileResolution);
+      extent, tileResolution);
 
   /** @type {Object.<number, Object.<string, ol.Tile>>} */
   var tilesToDrawByZ = {};
   tilesToDrawByZ[z] = {};
 
-  function isLoaded(tile) {
+  var getTileIfLoaded = this.createGetTileIfLoadedFunction(function(tile) {
     return !goog.isNull(tile) && tile.getState() == ol.TileState.LOADED;
-  }
+  }, tileSource, tileGrid, projection);
   var findLoadedTiles = goog.bind(tileSource.findLoadedTiles, tileSource,
-      tilesToDrawByZ, isLoaded);
+      tilesToDrawByZ, getTileIfLoaded);
 
   var allTilesLoaded = true;
   var tile, tileCenter, tileCoord, tileState, x, y;
@@ -105,22 +118,19 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
     for (y = tileRange.minY; y <= tileRange.maxY; ++y) {
 
       tileCoord = new ol.TileCoord(z, x, y);
-      tile = tileSource.getTile(tileCoord);
-      if (goog.isNull(tile)) {
-        continue;
-      }
-
+      tile = tileSource.getTile(tileCoord, tileGrid, projection);
       tileState = tile.getState();
       if (tileState == ol.TileState.IDLE) {
-        goog.events.listenOnce(tile, goog.events.EventType.CHANGE,
-            this.handleTileChange, false, this);
         this.updateWantedTiles(frameState.wantedTiles, tileSource, tileCoord);
         tileCenter = tileGrid.getTileCoordCenter(tileCoord);
         frameState.tileQueue.enqueue(tile, tileSourceKey, tileCenter);
+      } else if (tileState == ol.TileState.LOADING) {
+        this.listenToTileChange(tile);
       } else if (tileState == ol.TileState.LOADED) {
         tilesToDrawByZ[z][tileCoord.toString()] = tile;
         continue;
-      } else if (tileState == ol.TileState.ERROR) {
+      } else if (tileState == ol.TileState.ERROR ||
+                 tileState == ol.TileState.EMPTY) {
         continue;
       }
 
@@ -138,7 +148,6 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
   /** @type {Object.<number, boolean>} */
   var newTileLayerZKeys = {};
 
-  var tileSize = tileGrid.getTileSize();
   var iz, tileCoordKey, tileCoordOrigin, tileLayerZ, tileLayerZKey, tilesToDraw;
   for (iz = 0; iz < zs.length; ++iz) {
     tileLayerZKey = zs[iz];
@@ -146,7 +155,7 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
       tileLayerZ = this.tileLayerZs_[tileLayerZKey];
     } else {
       tileCoordOrigin =
-          tileGrid.getTileCoordForCoordAndZ(view2DState.center, tileLayerZKey);
+          tileGrid.getTileCoordForCoordAndZ(center, tileLayerZKey);
       tileLayerZ = new ol.renderer.dom.TileLayerZ_(tileGrid, tileCoordOrigin);
       newTileLayerZKeys[tileLayerZKey] = true;
       this.tileLayerZs_[tileLayerZKey] = tileLayerZ;
@@ -183,8 +192,8 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
         resolution / view2DState.resolution, 1);
     goog.vec.Mat4.translate(
         transform,
-        (origin.x - view2DState.center.x) / resolution,
-        (view2DState.center.y - origin.y) / resolution,
+        (origin.x - center.x) / resolution,
+        (center.y - origin.y) / resolution,
         0);
     tileLayerZ.setTransform(transform);
     if (tileLayerZKey in newTileLayerZKeys) {
@@ -200,8 +209,8 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
       }
     } else {
       if (!frameState.viewHints[ol.ViewHint.ANIMATING] &&
-          !frameState.viewHints[ol.ViewHint.PANNING]) {
-        tileLayerZ.removeTilesOutsideExtent(frameState.extent);
+          !frameState.viewHints[ol.ViewHint.INTERACTING]) {
+        tileLayerZ.removeTilesOutsideExtent(extent);
       }
     }
   }
@@ -217,6 +226,7 @@ ol.renderer.dom.TileLayer.prototype.renderFrame =
   }
 
   this.updateUsedTiles(frameState.usedTiles, tileSource, z, tileRange);
+  tileSource.useLowResolutionTiles(z, extent, tileGrid);
   this.scheduleExpireCache(frameState, tileSource);
 
 };
@@ -292,7 +302,7 @@ ol.renderer.dom.TileLayerZ_.prototype.addTile = function(tile) {
   if (tileCoordKey in this.tiles_) {
     return;
   }
-  var tileSize = this.tileGrid_.getTileSize();
+  var tileSize = this.tileGrid_.getTileSize(tileCoord.z);
   var image = tile.getImage(this);
   var style = image.style;
   style.position = 'absolute';

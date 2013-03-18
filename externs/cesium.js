@@ -2,9 +2,13 @@
  * @externs
  * @see http://cesium.agi.com/
  */
-var Cesium = {};
+var Cesium = function(){};
 
 
+/**
+ * @param {Function=} callback
+ */
+Cesium.requestAnimationFrame = function(callback){};
 
 /**
  * @constructor

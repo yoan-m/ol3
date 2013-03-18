@@ -6,7 +6,7 @@ goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
-goog.require('ol.BrowserFeature');
+goog.require('ol');
 goog.require('ol.control.Control');
 
 
@@ -20,39 +20,45 @@ ol.control.ZOOM_DURATION = 250;
 /**
  * @constructor
  * @extends {ol.control.Control}
- * @param {ol.control.ZoomOptions} zoomOptions Zoom options.
+ * @param {ol.control.ZoomOptions=} opt_options Options.
  */
-ol.control.Zoom = function(zoomOptions) {
+ol.control.Zoom = function(opt_options) {
 
-  var eventType = ol.BrowserFeature.HAS_TOUCH ?
-      goog.events.EventType.TOUCHEND : goog.events.EventType.CLICK;
+  var options = goog.isDef(opt_options) ? opt_options : {};
 
   var inElement = goog.dom.createDom(goog.dom.TagName.A, {
     'href': '#zoomIn',
     'class': 'ol-zoom-in'
-  }, '+');
-  goog.events.listen(inElement, eventType, this.handleIn_, false, this);
+  });
+  goog.events.listen(inElement, [
+    goog.events.EventType.TOUCHEND,
+    goog.events.EventType.CLICK
+  ], this.handleIn_, false, this);
 
   var outElement = goog.dom.createDom(goog.dom.TagName.A, {
     'href': '#zoomOut',
     'class': 'ol-zoom-out'
-  }, '\u2212');
-  goog.events.listen(outElement, eventType, this.handleOut_, false, this);
+  });
+  goog.events.listen(outElement, [
+    goog.events.EventType.TOUCHEND,
+    goog.events.EventType.CLICK
+  ], this.handleOut_, false, this);
 
-  var element = goog.dom.createDom(
-      goog.dom.TagName.DIV, 'ol-zoom ol-unselectable', inElement, outElement);
+  var cssClasses = 'ol-zoom ' + ol.CSS_CLASS_UNSELECTABLE;
+  var element = goog.dom.createDom(goog.dom.TagName.DIV, cssClasses, inElement,
+      outElement);
 
   goog.base(this, {
     element: element,
-    map: zoomOptions.map,
-    target: zoomOptions.target
+    map: options.map,
+    target: options.target
   });
 
   /**
    * @type {number}
    * @private
    */
-  this.delta_ = goog.isDef(zoomOptions.delta) ? zoomOptions.delta : 1;
+  this.delta_ = goog.isDef(options.delta) ? options.delta : 1;
 
 };
 goog.inherits(ol.control.Zoom, ol.control.Control);
@@ -68,7 +74,8 @@ ol.control.Zoom.prototype.handleIn_ = function(browserEvent) {
   var map = this.getMap();
   map.requestRenderFrame();
   // FIXME works for View2D only
-  map.getView().zoom(map, this.delta_, undefined, ol.control.ZOOM_DURATION);
+  map.getView().zoomByDelta(map, this.delta_, undefined,
+      ol.control.ZOOM_DURATION);
 };
 
 
@@ -82,5 +89,6 @@ ol.control.Zoom.prototype.handleOut_ = function(browserEvent) {
   var map = this.getMap();
   map.requestRenderFrame();
   // FIXME works for View2D only
-  map.getView().zoom(map, -this.delta_, undefined, ol.control.ZOOM_DURATION);
+  map.getView().zoomByDelta(map, -this.delta_, undefined,
+      ol.control.ZOOM_DURATION);
 };

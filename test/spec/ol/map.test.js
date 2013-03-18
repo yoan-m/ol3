@@ -19,31 +19,31 @@ describe('ol.RendererHints', function() {
     it('returns defaults when no query string', function() {
       goog.global.location = {search: ''};
       var hints = ol.RendererHints.createFromQueryData();
-      expect(hints).toBe(ol.DEFAULT_RENDERER_HINTS);
+      expect(hints).to.be(ol.DEFAULT_RENDERER_HINTS);
     });
 
     it('returns defaults when no "renderer" or "renderers"', function() {
       goog.global.location = {search: '?foo=bar'};
       var hints = ol.RendererHints.createFromQueryData();
-      expect(hints).toBe(ol.DEFAULT_RENDERER_HINTS);
+      expect(hints).to.be(ol.DEFAULT_RENDERER_HINTS);
     });
 
     it('returns array of one for "renderer"', function() {
       goog.global.location = {search: '?renderer=bogus'};
       var hints = ol.RendererHints.createFromQueryData();
-      expect(hints).toEqual(['bogus']);
+      expect(hints).to.eql(['bogus']);
     });
 
     it('accepts comma delimited list for "renderers"', function() {
       goog.global.location = {search: '?renderers=one,two'};
       var hints = ol.RendererHints.createFromQueryData();
-      expect(hints).toEqual(['one', 'two']);
+      expect(hints).to.eql(['one', 'two']);
     });
 
     it('works with "renderer" in second position', function() {
       goog.global.location = {search: '?foo=bar&renderer=one'};
       var hints = ol.RendererHints.createFromQueryData();
-      expect(hints).toEqual(['one']);
+      expect(hints).to.eql(['one']);
     });
 
   });
@@ -62,7 +62,7 @@ describe('ol.Map', function() {
 
     it('removes the viewport from its parent', function() {
       map.dispose();
-      expect(goog.dom.getParentElement(map.getViewport())).toBeNull();
+      expect(goog.dom.getParentElement(map.getViewport())).to.be(null);
     });
   });
 
@@ -77,33 +77,19 @@ describe('ol.Map', function() {
         dragPan: false,
         keyboard: false,
         mouseWheelZoom: false,
-        shiftDragZoom: false
+        shiftDragZoom: false,
+        touchPan: false,
+        touchRotate: false,
+        touchZoom: false
       };
     });
 
     describe('create mousewheel interaction', function() {
-
-      beforeEach(function() {
+      it('creates mousewheel interaction', function() {
         options.mouseWheelZoom = true;
-      });
-
-      describe('default mouseWheelZoomDelta', function() {
-        it('create mousewheel interaction with default delta', function() {
-          var interactions = ol.Map.createInteractions_(options);
-          expect(interactions.getLength()).toEqual(1);
-          expect(interactions.getAt(0)).toBeA(ol.interaction.MouseWheelZoom);
-          expect(interactions.getAt(0).delta_).toEqual(1);
-        });
-      });
-
-      describe('set mouseWheelZoomDelta', function() {
-        it('create mousewheel interaction with set delta', function() {
-          options.mouseWheelZoomDelta = 7;
-          var interactions = ol.Map.createInteractions_(options);
-          expect(interactions.getLength()).toEqual(1);
-          expect(interactions.getAt(0)).toBeA(ol.interaction.MouseWheelZoom);
-          expect(interactions.getAt(0).delta_).toEqual(7);
-        });
+        var interactions = ol.interaction.defaults(options);
+        expect(interactions.getLength()).to.eql(1);
+        expect(interactions.getAt(0)).to.be.a(ol.interaction.MouseWheelZoom);
       });
     });
 
@@ -115,20 +101,20 @@ describe('ol.Map', function() {
 
       describe('default zoomDelta', function() {
         it('create double click interaction with default delta', function() {
-          var interactions = ol.Map.createInteractions_(options);
-          expect(interactions.getLength()).toEqual(1);
-          expect(interactions.getAt(0)).toBeA(ol.interaction.DblClickZoom);
-          expect(interactions.getAt(0).delta_).toEqual(4);
+          var interactions = ol.interaction.defaults(options);
+          expect(interactions.getLength()).to.eql(1);
+          expect(interactions.getAt(0)).to.be.a(ol.interaction.DblClickZoom);
+          expect(interactions.getAt(0).delta_).to.eql(1);
         });
       });
 
-      describe('set mouseWheelZoomDelta', function() {
+      describe('set zoomDelta', function() {
         it('create double click interaction with set delta', function() {
           options.zoomDelta = 7;
-          var interactions = ol.Map.createInteractions_(options);
-          expect(interactions.getLength()).toEqual(1);
-          expect(interactions.getAt(0)).toBeA(ol.interaction.DblClickZoom);
-          expect(interactions.getAt(0).delta_).toEqual(7);
+          var interactions = ol.interaction.defaults(options);
+          expect(interactions.getLength()).to.eql(1);
+          expect(interactions.getAt(0)).to.be.a(ol.interaction.DblClickZoom);
+          expect(interactions.getAt(0).delta_).to.eql(7);
         });
       });
     });
@@ -139,8 +125,8 @@ describe('ol.Map', function() {
     var layer, map;
     beforeEach(function() {
       // always use setTimeout based shim for requestAnimationFrame
-      spyOn(goog.async.AnimationDelay.prototype, 'getRaf_')
-          .andCallFake(function() {return null;});
+      sinon.stub(goog.async.AnimationDelay.prototype, 'getRaf_',
+          function() {return null;});
 
       layer = new ol.layer.TileLayer({
         source: new ol.source.XYZ({
@@ -165,7 +151,7 @@ describe('ol.Map', function() {
       layer.dispose();
     });
 
-    it('can set up an animation loop', function() {
+    it('can set up an animation loop', function(done) {
 
       function quadInOut(t, b, c, d) {
         if ((t /= d / 2) < 1) {
@@ -203,7 +189,7 @@ describe('ol.Map', function() {
         }
       };
 
-      spyOn(o, 'callback').andCallThrough();
+      sinon.spy(o, 'callback');
 
       var animationDelay = new goog.async.AnimationDelay(o.callback);
 
@@ -211,25 +197,24 @@ describe('ol.Map', function() {
 
       // confirm that the center is somewhere between origin and destination
       // after a short delay
-      waits(goog.async.AnimationDelay.TIMEOUT);
-      runs(function() {
-        expect(o.callback).toHaveBeenCalled();
+      setTimeout(function() {
+        expect(o.callback).to.be.called();
         var loc = map.getView().getCenter();
-        expect(loc.x).not.toEqual(origin.x);
-        expect(loc.y).not.toEqual(origin.y);
+        expect(loc.x).not.to.eql(origin.x);
+        expect(loc.y).not.to.eql(origin.y);
         if (new Date().getTime() - start < duration) {
-          expect(loc.x).not.toEqual(destination.x);
-          expect(loc.y).not.toEqual(destination.y);
+          expect(loc.x).not.to.eql(destination.x);
+          expect(loc.y).not.to.eql(destination.y);
         }
-      });
+      }, goog.async.AnimationDelay.TIMEOUT);
 
       // confirm that the map has reached the destination after the duration
-      waits(duration);
-      runs(function() {
+      setTimeout(function() {
         var loc = map.getView().getCenter();
-        expect(loc.x).toEqual(destination.x);
-        expect(loc.y).toEqual(destination.y);
-      });
+        expect(loc.x).to.eql(destination.x);
+        expect(loc.y).to.eql(destination.y);
+        done();
+      }, duration + goog.async.AnimationDelay.TIMEOUT);
 
     });
 
@@ -243,6 +228,10 @@ goog.require('ol.Collection');
 goog.require('ol.Coordinate');
 goog.require('ol.Map');
 goog.require('ol.RendererHint');
+goog.require('ol.RendererHints');
 goog.require('ol.View2D');
+goog.require('ol.interaction.DblClickZoom');
+goog.require('ol.interaction.MouseWheelZoom');
+goog.require('ol.interaction.defaults');
 goog.require('ol.layer.TileLayer');
 goog.require('ol.source.XYZ');

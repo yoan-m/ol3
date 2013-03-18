@@ -16,7 +16,7 @@ goog.require('ol.source.Source');
  * @typedef {{attributions: (Array.<ol.Attribution>|undefined),
  *            crossOrigin: (null|string|undefined),
  *            extent: (null|ol.Extent|undefined),
- *            projection: (ol.Projection|undefined),
+ *            projection: ol.ProjectionLike,
  *            resolutions: (Array.<number>|undefined),
  *            imageUrlFunction: (ol.ImageUrlFunctionType|
  *                undefined)}}
@@ -76,12 +76,13 @@ goog.inherits(ol.source.ImageSource, ol.source.Source);
  * @param {ol.Extent} extent Extent.
  * @param {number} resolution Resolution.
  * @param {ol.Size} size Size.
+ * @param {ol.Projection} projection Projection.
  * @return {ol.Image} Single image.
  */
 ol.source.ImageSource.prototype.createImage =
-    function(extent, resolution, size) {
+    function(extent, resolution, size, projection) {
   var image = null;
-  var imageUrl = this.imageUrlFunction(extent, size);
+  var imageUrl = this.imageUrlFunction(extent, size, projection);
   if (goog.isDef(imageUrl)) {
     image = new ol.Image(
         extent, resolution, imageUrl, this.crossOrigin_,
@@ -109,6 +110,7 @@ ol.source.ImageSource.prototype.findNearestResolution =
 /**
  * @param {ol.Extent} extent Extent.
  * @param {number} resolution Resolution.
+ * @param {ol.Projection} projection Projection.
  * @return {ol.Image} Single image.
  */
 ol.source.ImageSource.prototype.getImage = goog.abstractMethod;

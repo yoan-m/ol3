@@ -9,7 +9,7 @@ describe('ol.layer.Layer', function() {
     beforeEach(function() {
       layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         })
       });
     });
@@ -19,31 +19,31 @@ describe('ol.layer.Layer', function() {
     });
 
     it('creates an instance', function() {
-      expect(layer).toBeA(ol.layer.Layer);
+      expect(layer).to.be.a(ol.layer.Layer);
     });
 
     it('provides default brightness', function() {
-      expect(layer.getBrightness()).toBe(0);
+      expect(layer.getBrightness()).to.be(0);
     });
 
     it('provides default contrast', function() {
-      expect(layer.getContrast()).toBe(1);
+      expect(layer.getContrast()).to.be(1);
     });
 
     it('provides default hue', function() {
-      expect(layer.getHue()).toBe(0);
+      expect(layer.getHue()).to.be(0);
     });
 
     it('provides default opacity', function() {
-      expect(layer.getOpacity()).toBe(1);
+      expect(layer.getOpacity()).to.be(1);
     });
 
     it('provides default saturation', function() {
-      expect(layer.getSaturation()).toBe(1);
+      expect(layer.getSaturation()).to.be(1);
     });
 
     it('provides default visibility', function() {
-      expect(layer.getVisible()).toBe(true);
+      expect(layer.getVisible()).to.be(true);
     });
 
   });
@@ -53,7 +53,7 @@ describe('ol.layer.Layer', function() {
     it('accepts options', function() {
       var layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         }),
         brightness: 0.5,
         contrast: 10,
@@ -63,12 +63,12 @@ describe('ol.layer.Layer', function() {
         visible: false
       });
 
-      expect(layer.getBrightness()).toBe(0.5);
-      expect(layer.getContrast()).toBe(10);
-      expect(layer.getHue()).toBe(180);
-      expect(layer.getOpacity()).toBe(0.5);
-      expect(layer.getSaturation()).toBe(5);
-      expect(layer.getVisible()).toBe(false);
+      expect(layer.getBrightness()).to.be(0.5);
+      expect(layer.getContrast()).to.be(10);
+      expect(layer.getHue()).to.be(180);
+      expect(layer.getOpacity()).to.be(0.5);
+      expect(layer.getSaturation()).to.be(5);
+      expect(layer.getVisible()).to.be(false);
 
       layer.dispose();
     });
@@ -82,7 +82,7 @@ describe('ol.layer.Layer', function() {
     beforeEach(function() {
       layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         })
       });
     });
@@ -93,22 +93,22 @@ describe('ol.layer.Layer', function() {
 
     it('accepts a positive number', function() {
       layer.setBrightness(0.3);
-      expect(layer.getBrightness()).toBe(0.3);
+      expect(layer.getBrightness()).to.be(0.3);
     });
 
     it('accepts a negative number', function() {
       layer.setBrightness(-0.7);
-      expect(layer.getBrightness()).toBe(-0.7);
+      expect(layer.getBrightness()).to.be(-0.7);
     });
 
     it('clamps to 1', function() {
       layer.setBrightness(1.5);
-      expect(layer.getBrightness()).toBe(1);
+      expect(layer.getBrightness()).to.be(1);
     });
 
     it('clamps to -1', function() {
       layer.setBrightness(-3);
-      expect(layer.getBrightness()).toBe(-1);
+      expect(layer.getBrightness()).to.be(-1);
     });
 
   });
@@ -120,7 +120,7 @@ describe('ol.layer.Layer', function() {
     beforeEach(function() {
       layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         })
       });
     });
@@ -131,17 +131,17 @@ describe('ol.layer.Layer', function() {
 
     it('accepts a small positive number', function() {
       layer.setContrast(0.3);
-      expect(layer.getContrast()).toBe(0.3);
+      expect(layer.getContrast()).to.be(0.3);
     });
 
     it('clamps to 0', function() {
       layer.setContrast(-0.7);
-      expect(layer.getContrast()).toBe(0);
+      expect(layer.getContrast()).to.be(0);
     });
 
     it('accepts a big positive number', function() {
       layer.setContrast(42);
-      expect(layer.getContrast()).toBe(42);
+      expect(layer.getContrast()).to.be(42);
     });
 
   });
@@ -154,7 +154,7 @@ describe('ol.layer.Layer', function() {
     beforeEach(function() {
       layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         })
       });
     });
@@ -165,22 +165,22 @@ describe('ol.layer.Layer', function() {
 
     it('accepts a small positive number', function() {
       layer.setHue(0.3);
-      expect(layer.getHue()).toBe(0.3);
+      expect(layer.getHue()).to.be(0.3);
     });
 
     it('accepts a small negative number', function() {
       layer.setHue(-0.7);
-      expect(layer.getHue()).toBe(-0.7);
+      expect(layer.getHue()).to.be(-0.7);
     });
 
     it('accepts a big positive number', function() {
       layer.setHue(42);
-      expect(layer.getHue()).toBe(42);
+      expect(layer.getHue()).to.be(42);
     });
 
     it('accepts a big negative number', function() {
       layer.setHue(-100);
-      expect(layer.getHue()).toBe(-100);
+      expect(layer.getHue()).to.be(-100);
     });
 
   });
@@ -193,7 +193,7 @@ describe('ol.layer.Layer', function() {
     beforeEach(function() {
       layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         })
       });
     });
@@ -204,17 +204,17 @@ describe('ol.layer.Layer', function() {
 
     it('accepts a positive number', function() {
       layer.setOpacity(0.3);
-      expect(layer.getOpacity()).toBe(0.3);
+      expect(layer.getOpacity()).to.be(0.3);
     });
 
     it('clamps to 0', function() {
       layer.setOpacity(-1.5);
-      expect(layer.getOpacity()).toBe(0);
+      expect(layer.getOpacity()).to.be(0);
     });
 
     it('clamps to 1', function() {
       layer.setOpacity(3);
-      expect(layer.getOpacity()).toBe(1);
+      expect(layer.getOpacity()).to.be(1);
     });
 
   });
@@ -227,7 +227,7 @@ describe('ol.layer.Layer', function() {
     beforeEach(function() {
       layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         })
       });
     });
@@ -238,17 +238,17 @@ describe('ol.layer.Layer', function() {
 
     it('accepts a small positive number', function() {
       layer.setSaturation(0.3);
-      expect(layer.getSaturation()).toBe(0.3);
+      expect(layer.getSaturation()).to.be(0.3);
     });
 
     it('clamps to 0', function() {
       layer.setSaturation(-0.7);
-      expect(layer.getSaturation()).toBe(0);
+      expect(layer.getSaturation()).to.be(0);
     });
 
     it('accepts a big positive number', function() {
       layer.setSaturation(42);
-      expect(layer.getSaturation()).toBe(42);
+      expect(layer.getSaturation()).to.be(42);
     });
 
   });
@@ -259,15 +259,15 @@ describe('ol.layer.Layer', function() {
     it('sets visible property', function() {
       var layer = new ol.layer.Layer({
         source: new ol.source.Source({
-          projection: ol.Projection.getFromCode('EPSG:4326')
+          projection: ol.projection.get('EPSG:4326')
         })
       });
 
       layer.setVisible(false);
-      expect(layer.getVisible()).toBe(false);
+      expect(layer.getVisible()).to.be(false);
 
       layer.setVisible(true);
-      expect(layer.getVisible()).toBe(true);
+      expect(layer.getVisible()).to.be(true);
 
       layer.dispose();
     });
@@ -275,3 +275,7 @@ describe('ol.layer.Layer', function() {
   });
 
 });
+
+goog.require('ol.layer.Layer');
+goog.require('ol.projection');
+goog.require('ol.source.Source');

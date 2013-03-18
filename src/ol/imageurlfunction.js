@@ -1,31 +1,27 @@
 goog.provide('ol.ImageUrlFunction');
 goog.provide('ol.ImageUrlFunctionType');
 
-goog.require('goog.uri.utils');
 goog.require('ol.Extent');
 goog.require('ol.Size');
+goog.require('ol.source.wms');
 
 
 /**
- * @typedef {function(ol.Extent, ol.Size): (string|undefined)}
+ * @typedef {function(ol.Extent, ol.Size, ol.Projection): (string|undefined)}
  */
 ol.ImageUrlFunctionType;
 
 
 /**
  * @param {string} baseUrl Base URL (may have query data).
+ * @param {Object.<string, string|number>} params WMS parameters.
  * @return {ol.ImageUrlFunctionType} Image URL function.
  */
-ol.ImageUrlFunction.createBboxParam = function(baseUrl) {
-  return function(extent, size) {
-    // FIXME Projection dependant axis order.
-    var bboxValue = [
-      extent.minX, extent.minY, extent.maxX, extent.maxY
-    ].join(',');
-    return goog.uri.utils.appendParams(baseUrl,
-        'BBOX', bboxValue,
-        'HEIGHT', size.height,
-        'WIDTH', size.width);
+ol.ImageUrlFunction.createWMSParams =
+    function(baseUrl, params) {
+  return function(extent, size, projection) {
+    return ol.source.wms.getUrl(
+        baseUrl, params, extent, size, projection);
   };
 };
 

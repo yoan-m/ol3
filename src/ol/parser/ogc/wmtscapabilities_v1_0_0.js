@@ -1,9 +1,9 @@
 goog.provide('ol.parser.ogc.WMTSCapabilities_v1_0_0');
 goog.require('goog.dom.xml');
 goog.require('ol.Coordinate');
-goog.require('ol.Projection');
 goog.require('ol.parser.XML');
 goog.require('ol.parser.ogc.OWSCommon_v1_1_0');
+goog.require('ol.projection');
 
 
 
@@ -12,6 +12,8 @@ goog.require('ol.parser.ogc.OWSCommon_v1_1_0');
  * @extends {ol.parser.XML}
  */
 ol.parser.ogc.WMTSCapabilities_v1_0_0 = function() {
+  this.defaultNamespaceURI = 'http://www.opengis.net/wtms/1.0';
+  this.errorProperty = 'serviceIdentification';
   this.readers = {
     'http://www.opengis.net/wmts/1.0': {
       'Capabilities': function(node, obj) {
@@ -65,7 +67,7 @@ ol.parser.ogc.WMTSCapabilities_v1_0_0 = function() {
       },
       'TileMatrix': function(node, obj) {
         var tileMatrix = {
-          'supportedCRS': obj.supportedCRS
+          'supportedCRS': obj['supportedCRS']
         };
         this.readChildNodes(node, tileMatrix);
         obj['matrixIds'].push(tileMatrix);
@@ -76,9 +78,10 @@ ol.parser.ogc.WMTSCapabilities_v1_0_0 = function() {
       'TopLeftCorner': function(node, obj) {
         var topLeftCorner = this.getChildValue(node);
         var coords = topLeftCorner.split(' ');
-        var axis = ol.Projection.getFromCode(obj['supportedCRS']).getAxis();
+        var axisOrientation =
+            ol.projection.get(obj['supportedCRS']).getAxisOrientation();
         obj['topLeftCorner'] = ol.Coordinate.fromProjectedArray(
-            [parseFloat(coords[0]), parseFloat(coords[1])], axis);
+            [parseFloat(coords[0]), parseFloat(coords[1])], axisOrientation);
       },
       'TileWidth': function(node, obj) {
         obj['tileWidth'] = parseInt(this.getChildValue(node), 10);
@@ -93,17 +96,19 @@ ol.parser.ogc.WMTSCapabilities_v1_0_0 = function() {
         obj['matrixHeight'] = parseInt(this.getChildValue(node), 10);
       },
       'ResourceURL': function(node, obj) {
-        obj['resourceUrl'] = obj['resourceUrl'] || {};
         var resourceType = node.getAttribute('resourceType');
+        var format = node.getAttribute('format');
+        var template = node.getAttribute('template');
         if (!obj['resourceUrls']) {
-          obj['resourceUrls'] = [];
+          obj['resourceUrls'] = {};
         }
-        var resourceUrl = obj['resourceUrl'][resourceType] = {
-          'format': node.getAttribute('format'),
-          'template': node.getAttribute('template'),
-          'resourceType': resourceType
-        };
-        obj['resourceUrls'].push(resourceUrl);
+        if (!obj['resourceUrls'][resourceType]) {
+          obj['resourceUrls'][resourceType] = {};
+        }
+        if (!obj['resourceUrls'][resourceType][format]) {
+          obj['resourceUrls'][resourceType][format] = [];
+        }
+        obj['resourceUrls'][resourceType][format].push(template);
       },
       'WSDL': function(node, obj) {
         obj['wsdl'] = {};

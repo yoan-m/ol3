@@ -132,9 +132,9 @@ ol.renderer.cesium.ImageryProvider.prototype.getLogo = function() {
 ol.renderer.cesium.ImageryProvider.prototype.requestImage =
     function(x, y, level) {
   var coord = new ol.TileCoord(level, x, -y - 1);
-  var url = this.source_.getTileCoordUrl(coord);
-  if (typeof url !== 'undefined') {
-    return Cesium.ImageryProvider.loadImage(url);
+  var tile = this.source_.getTile(coord);
+  if (typeof tile !== 'undefined' && typeof tile.getKey() !== 'undefined') {
+    return Cesium.ImageryProvider.loadImage(tile.getKey());
   }
   return undefined;
 };

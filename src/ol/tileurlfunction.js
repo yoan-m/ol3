@@ -3,13 +3,14 @@ goog.provide('ol.TileUrlFunctionType');
 
 goog.require('goog.array');
 goog.require('goog.math');
-goog.require('goog.uri.utils');
 goog.require('ol.TileCoord');
+goog.require('ol.source.wms');
 goog.require('ol.tilegrid.TileGrid');
 
 
 /**
- * @typedef {function(ol.TileCoord): (string|undefined)}
+ * @typedef {function(ol.TileCoord, ol.tilegrid.TileGrid, ol.Projection):
+ *     (string|undefined)}
  */
 ol.TileUrlFunctionType;
 
@@ -19,28 +20,15 @@ ol.TileUrlFunctionType;
  * @return {ol.TileUrlFunctionType} Tile URL function.
  */
 ol.TileUrlFunction.createFromTemplate = function(template) {
-  var match =
-      /\{(\d)-(\d)\}/.exec(template) || /\{([a-z])-([a-z])\}/.exec(template);
-  if (match) {
-    var templates = [];
-    var startCharCode = match[1].charCodeAt(0);
-    var stopCharCode = match[2].charCodeAt(0);
-    var charCode;
-    for (charCode = startCharCode; charCode <= stopCharCode; ++charCode) {
-      templates.push(template.replace(match[0], String.fromCharCode(charCode)));
+  return function(tileCoord) {
+    if (goog.isNull(tileCoord)) {
+      return undefined;
+    } else {
+      return template.replace('{z}', tileCoord.z)
+                      .replace('{x}', tileCoord.x)
+                      .replace('{y}', tileCoord.y);
     }
-    return ol.TileUrlFunction.createFromTemplates(templates);
-  } else {
-    return function(tileCoord) {
-      if (goog.isNull(tileCoord)) {
-        return undefined;
-      } else {
-        return template.replace('{z}', tileCoord.z)
-                       .replace('{x}', tileCoord.x)
-                       .replace('{y}', tileCoord.y);
-      }
-    };
-  }
+  };
 };
 
 
@@ -59,12 +47,15 @@ ol.TileUrlFunction.createFromTemplates = function(templates) {
  * @return {ol.TileUrlFunctionType} Tile URL function.
  */
 ol.TileUrlFunction.createFromTileUrlFunctions = function(tileUrlFunctions) {
-  return function(tileCoord) {
+  if (tileUrlFunctions.length === 1) {
+    return tileUrlFunctions[0];
+  }
+  return function(tileCoord, tileGrid, projection) {
     if (goog.isNull(tileCoord)) {
       return undefined;
     } else {
       var index = goog.math.modulo(tileCoord.hash(), tileUrlFunctions.length);
-      return tileUrlFunctions[index](tileCoord);
+      return tileUrlFunctions[index](tileCoord, tileGrid, projection);
     }
   };
 };
@@ -72,20 +63,19 @@ ol.TileUrlFunction.createFromTileUrlFunctions = function(tileUrlFunctions) {
 
 /**
  * @param {string} baseUrl Base URL (may have query data).
- * @param {ol.tilegrid.TileGrid} tileGrid Tile grid.
+ * @param {Object.<string, string|number>} params WMS parameters.
  * @return {ol.TileUrlFunctionType} Tile URL function.
  */
-ol.TileUrlFunction.createBboxParam = function(baseUrl, tileGrid) {
-  return function(tileCoord) {
+ol.TileUrlFunction.createWMSParams =
+    function(baseUrl, params) {
+  return function(tileCoord, tileGrid, projection) {
     if (goog.isNull(tileCoord)) {
       return undefined;
     } else {
-      var tileExtent = tileGrid.getTileCoordExtent(tileCoord);
-      // FIXME Projection dependant axis order.
-      var bboxValue = [
-        tileExtent.minX, tileExtent.minY, tileExtent.maxX, tileExtent.maxY
-      ].join(',');
-      return goog.uri.utils.appendParam(baseUrl, 'BBOX', bboxValue);
+      var size = tileGrid.getTileSize(tileCoord.z);
+      var extent = tileGrid.getTileCoordExtent(tileCoord);
+      return ol.source.wms.getUrl(
+          baseUrl, params, extent, size, projection);
     }
   };
 };
@@ -101,18 +91,40 @@ ol.TileUrlFunction.nullTileUrlFunction = function(tileCoord) {
 
 
 /**
- * @param {function(ol.TileCoord): ol.TileCoord} transformFn
- *     Transform.function.
+ * @param {function(ol.TileCoord, ol.tilegrid.TileGrid, ol.Projection):
+ *     ol.TileCoord} transformFn Transform.function.
  * @param {ol.TileUrlFunctionType} tileUrlFunction Tile URL function.
  * @return {ol.TileUrlFunctionType} Tile URL function.
  */
 ol.TileUrlFunction.withTileCoordTransform =
     function(transformFn, tileUrlFunction) {
-  return function(tileCoord) {
+  return function(tileCoord, tileGrid, projection) {
     if (goog.isNull(tileCoord)) {
       return undefined;
     } else {
-      return tileUrlFunction(transformFn(tileCoord));
+      return tileUrlFunction(
+          transformFn(tileCoord, tileGrid, projection), tileGrid, projection);
     }
   };
+};
+
+
+/**
+ * @param {string} url Url.
+ * @return {Array.<string>} Array of urls.
+ */
+ol.TileUrlFunction.expandUrl = function(url) {
+  var urls = [];
+  var match = /\{(\d)-(\d)\}/.exec(url) || /\{([a-z])-([a-z])\}/.exec(url);
+  if (match) {
+    var startCharCode = match[1].charCodeAt(0);
+    var stopCharCode = match[2].charCodeAt(0);
+    var charCode;
+    for (charCode = startCharCode; charCode <= stopCharCode; ++charCode) {
+      urls.push(url.replace(match[0], String.fromCharCode(charCode)));
+    }
+  } else {
+    urls.push(url);
+  }
+  return urls;
 };

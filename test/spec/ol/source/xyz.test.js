@@ -2,7 +2,7 @@ goog.provide('ol.test.source.XYZ');
 
 describe('ol.source.XYZ', function() {
 
-  describe('getTileCoordUrl', function() {
+  describe('tileUrlFunction', function() {
 
     var xyzTileSource, tileGrid;
 
@@ -18,60 +18,60 @@ describe('ol.source.XYZ', function() {
       var coordinate = new ol.Coordinate(829330.2064098881, 5933916.615134273);
       var tileUrl;
 
-      tileUrl = xyzTileSource.getTileCoordUrl(
+      tileUrl = xyzTileSource.tileUrlFunction(
           tileGrid.getTileCoordForCoordAndZ(coordinate, 0));
-      expect(tileUrl).toEqual('0/0/0');
+      expect(tileUrl).to.eql('0/0/0');
 
-      tileUrl = xyzTileSource.getTileCoordUrl(
+      tileUrl = xyzTileSource.tileUrlFunction(
           tileGrid.getTileCoordForCoordAndZ(coordinate, 1));
-      expect(tileUrl).toEqual('1/1/0');
+      expect(tileUrl).to.eql('1/1/0');
 
-      tileUrl = xyzTileSource.getTileCoordUrl(
+      tileUrl = xyzTileSource.tileUrlFunction(
           tileGrid.getTileCoordForCoordAndZ(coordinate, 2));
-      expect(tileUrl).toEqual('2/2/1');
+      expect(tileUrl).to.eql('2/2/1');
 
-      tileUrl = xyzTileSource.getTileCoordUrl(
+      tileUrl = xyzTileSource.tileUrlFunction(
           tileGrid.getTileCoordForCoordAndZ(coordinate, 3));
-      expect(tileUrl).toEqual('3/4/2');
+      expect(tileUrl).to.eql('3/4/2');
 
-      tileUrl = xyzTileSource.getTileCoordUrl(
+      tileUrl = xyzTileSource.tileUrlFunction(
           tileGrid.getTileCoordForCoordAndZ(coordinate, 4));
-      expect(tileUrl).toEqual('4/8/5');
+      expect(tileUrl).to.eql('4/8/5');
 
-      tileUrl = xyzTileSource.getTileCoordUrl(
+      tileUrl = xyzTileSource.tileUrlFunction(
           tileGrid.getTileCoordForCoordAndZ(coordinate, 5));
-      expect(tileUrl).toEqual('5/16/11');
+      expect(tileUrl).to.eql('5/16/11');
 
-      tileUrl = xyzTileSource.getTileCoordUrl(
+      tileUrl = xyzTileSource.tileUrlFunction(
           tileGrid.getTileCoordForCoordAndZ(coordinate, 6));
-      expect(tileUrl).toEqual('6/33/22');
+      expect(tileUrl).to.eql('6/33/22');
     });
 
     describe('wrap x', function() {
       it('returns the expected URL', function() {
-        var tileUrl = xyzTileSource.getTileCoordUrl(
+        var tileUrl = xyzTileSource.tileUrlFunction(
             new ol.TileCoord(6, -31, -23));
-        expect(tileUrl).toEqual('6/33/22');
+        expect(tileUrl).to.eql('6/33/22');
 
-        tileUrl = xyzTileSource.getTileCoordUrl(new ol.TileCoord(6, 33, -23));
-        expect(tileUrl).toEqual('6/33/22');
+        tileUrl = xyzTileSource.tileUrlFunction(new ol.TileCoord(6, 33, -23));
+        expect(tileUrl).to.eql('6/33/22');
 
-        tileUrl = xyzTileSource.getTileCoordUrl(new ol.TileCoord(6, 97, -23));
-        expect(tileUrl).toEqual('6/33/22');
+        tileUrl = xyzTileSource.tileUrlFunction(new ol.TileCoord(6, 97, -23));
+        expect(tileUrl).to.eql('6/33/22');
       });
     });
 
     describe('crop y', function() {
       it('returns the expected URL', function() {
-        var tileUrl = xyzTileSource.getTileCoordUrl(
+        var tileUrl = xyzTileSource.tileUrlFunction(
             new ol.TileCoord(6, 33, -87));
-        expect(tileUrl).toBeUndefined();
+        expect(tileUrl).to.be(undefined);
 
-        tileUrl = xyzTileSource.getTileCoordUrl(new ol.TileCoord(6, 33, -23));
-        expect(tileUrl).toEqual('6/33/22');
+        tileUrl = xyzTileSource.tileUrlFunction(new ol.TileCoord(6, 33, -23));
+        expect(tileUrl).to.eql('6/33/22');
 
-        tileUrl = xyzTileSource.getTileCoordUrl(new ol.TileCoord(6, 33, 41));
-        expect(tileUrl).toBeUndefined();
+        tileUrl = xyzTileSource.tileUrlFunction(new ol.TileCoord(6, 33, 41));
+        expect(tileUrl).to.be(undefined);
       });
     });
   });
@@ -90,38 +90,38 @@ describe('ol.source.XYZ', function() {
             return false;
           });
 
-      expect(zs.length).toEqual(5);
-      expect(tileRanges.length).toEqual(5);
+      expect(zs.length).to.eql(5);
+      expect(tileRanges.length).to.eql(5);
 
-      expect(zs[0]).toEqual(4);
-      expect(tileRanges[0].minX).toEqual(5);
-      expect(tileRanges[0].minY).toEqual(10);
-      expect(tileRanges[0].maxX).toEqual(5);
-      expect(tileRanges[0].maxY).toEqual(10);
+      expect(zs[0]).to.eql(4);
+      expect(tileRanges[0].minX).to.eql(5);
+      expect(tileRanges[0].minY).to.eql(10);
+      expect(tileRanges[0].maxX).to.eql(5);
+      expect(tileRanges[0].maxY).to.eql(10);
 
-      expect(zs[1]).toEqual(3);
-      expect(tileRanges[1].minX).toEqual(2);
-      expect(tileRanges[1].minY).toEqual(5);
-      expect(tileRanges[1].maxX).toEqual(2);
-      expect(tileRanges[1].maxY).toEqual(5);
+      expect(zs[1]).to.eql(3);
+      expect(tileRanges[1].minX).to.eql(2);
+      expect(tileRanges[1].minY).to.eql(5);
+      expect(tileRanges[1].maxX).to.eql(2);
+      expect(tileRanges[1].maxY).to.eql(5);
 
-      expect(zs[2]).toEqual(2);
-      expect(tileRanges[2].minX).toEqual(1);
-      expect(tileRanges[2].minY).toEqual(2);
-      expect(tileRanges[2].maxX).toEqual(1);
-      expect(tileRanges[2].maxY).toEqual(2);
+      expect(zs[2]).to.eql(2);
+      expect(tileRanges[2].minX).to.eql(1);
+      expect(tileRanges[2].minY).to.eql(2);
+      expect(tileRanges[2].maxX).to.eql(1);
+      expect(tileRanges[2].maxY).to.eql(2);
 
-      expect(zs[3]).toEqual(1);
-      expect(tileRanges[3].minX).toEqual(0);
-      expect(tileRanges[3].minY).toEqual(1);
-      expect(tileRanges[3].maxX).toEqual(0);
-      expect(tileRanges[3].maxY).toEqual(1);
+      expect(zs[3]).to.eql(1);
+      expect(tileRanges[3].minX).to.eql(0);
+      expect(tileRanges[3].minY).to.eql(1);
+      expect(tileRanges[3].maxX).to.eql(0);
+      expect(tileRanges[3].maxY).to.eql(1);
 
-      expect(zs[4]).toEqual(0);
-      expect(tileRanges[4].minX).toEqual(0);
-      expect(tileRanges[4].minY).toEqual(0);
-      expect(tileRanges[4].maxX).toEqual(0);
-      expect(tileRanges[4].maxY).toEqual(0);
+      expect(zs[4]).to.eql(0);
+      expect(tileRanges[4].minX).to.eql(0);
+      expect(tileRanges[4].minY).to.eql(0);
+      expect(tileRanges[4].maxX).to.eql(0);
+      expect(tileRanges[4].maxY).to.eql(0);
     });
   });
 
@@ -129,5 +129,5 @@ describe('ol.source.XYZ', function() {
 
 goog.require('ol.Coordinate');
 goog.require('ol.TileCoord');
-goog.require('ol.TileUrlFunction');
+goog.require('ol.tilegrid.XYZ');
 goog.require('ol.source.XYZ');

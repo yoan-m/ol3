@@ -79,6 +79,7 @@ goog.inherits(ol.renderer.Map, goog.Disposable);
 ol.renderer.Map.prototype.addLayer = function(layer) {
   var layerRenderer = this.createLayerRenderer(layer);
   this.setLayerRenderer(layer, layerRenderer);
+  this.getMap().render();
 };
 
 
@@ -119,7 +120,9 @@ ol.renderer.Map.prototype.calculateMatrices2D = function(frameState) {
  * @protected
  * @return {ol.renderer.Layer} layerRenderer Layer renderer.
  */
-ol.renderer.Map.prototype.createLayerRenderer = goog.functions.NULL;
+ol.renderer.Map.prototype.createLayerRenderer = function(layer) {
+  return new ol.renderer.Layer(this, layer);
+};
 
 
 /**
@@ -222,6 +225,7 @@ ol.renderer.Map.prototype.handleLayersRemove = function(collectionEvent) {
  */
 ol.renderer.Map.prototype.removeLayer = function(layer) {
   goog.dispose(this.removeLayerRenderer(layer));
+  this.getMap().render();
 };
 
 

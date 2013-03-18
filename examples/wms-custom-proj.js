@@ -1,43 +1,24 @@
-goog.require('goog.debug.Console');
-goog.require('goog.debug.Logger');
-goog.require('goog.debug.Logger.Level');
 goog.require('ol.Attribution');
-goog.require('ol.Collection');
 goog.require('ol.Coordinate');
 goog.require('ol.Extent');
 goog.require('ol.Map');
-goog.require('ol.Projection');
-goog.require('ol.ProjectionUnits');
 goog.require('ol.RendererHints');
 goog.require('ol.View2D');
-goog.require('ol.layer.ImageLayer');
+goog.require('ol.control.ScaleLine');
+goog.require('ol.control.ScaleLineUnits');
+goog.require('ol.control.defaults');
 goog.require('ol.layer.TileLayer');
-goog.require('ol.source.SingleImageWMS');
+goog.require('ol.projection');
 goog.require('ol.source.TiledWMS');
 
 
-if (goog.DEBUG) {
-  goog.debug.Console.autoInstall();
-  goog.debug.Logger.getLogger('ol').setLevel(goog.debug.Logger.Level.INFO);
-}
-
-var epsg21781 = new ol.Projection('EPSG:21781', ol.ProjectionUnits.METERS,
-    // Validity extent from http://spatialreference.org
-    new ol.Extent(485869.5728, 76443.1884, 837076.5648, 299941.7864));
-ol.Projection.addProjection(epsg21781);
-
-// We give the single image source a set of resolutions. This prevents the
-// source from requesting images of arbitrary resolutions.
-var projectionExtent = epsg21781.getExtent();
-var maxResolution = Math.max(projectionExtent.getWidth(),
-    projectionExtent.getHeight()) / 256;
-var resolutions = new Array(10);
-for (var i = 0; i < 10; ++i) {
-  resolutions[i] = maxResolution / Math.pow(2.0, i);
-}
+var projection = ol.projection.configureProj4jsProjection({
+  code: 'EPSG:21781',
+  extent: new ol.Extent(485869.5728, 76443.1884, 837076.5648, 299941.7864)
+});
 
 var extent = new ol.Extent(420000, 30000, 900000, 350000);
-var layers = new ol.Collection([
+var layers = [
   new ol.layer.TileLayer({
     source: new ol.source.TiledWMS({
       url: 'http://wms.geo.admin.ch/',
@@ -49,30 +30,33 @@ var layers = new ol.Collection([
         'LAYERS': 'ch.swisstopo.pixelkarte-farbe-pk1000.noscale',
         'FORMAT': 'image/jpeg'
       },
-      projection: epsg21781,
       extent: extent
     })
   }),
-  new ol.layer.ImageLayer({
-    source: new ol.source.SingleImageWMS({
+  new ol.layer.TileLayer({
+    source: new ol.source.TiledWMS({
       url: 'http://wms.geo.admin.ch/',
       attributions: [new ol.Attribution(
           '&copy; ' +
           '<a href="http://www.geo.admin.ch/internet/geoportal/en/home.html">' +
           'National parks / geo.admin.ch</a>')],
       params: {'LAYERS': 'ch.bafu.schutzgebiete-paerke_nationaler_bedeutung'},
-      projection: epsg21781,
-      resolutions: resolutions
+      extent: extent
     })
   })
-]);
+];
 
 var map = new ol.Map({
+  controls: ol.control.defaults({}, [
+    new ol.control.ScaleLine({
+      units: ol.control.ScaleLineUnits.METRIC
+    })
+  ]),
   layers: layers,
   renderers: ol.RendererHints.createFromQueryData(),
   target: 'map',
   view: new ol.View2D({
-    projection: epsg21781,
+    projection: projection,
     center: new ol.Coordinate(660000, 190000),
     zoom: 2
   })

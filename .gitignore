@@ -3,11 +3,12 @@
 /build/gh-pages
 /build/check-requires-timestamp
 /build/jsdoc-*-timestamp
-/build/lint-spec-timestamp
-/build/lint-src-timestamp
+/build/lint-timestamp
 /build/ol.css
 /build/ol.js
 /build/ol-all.js
+/build/ol-simple.js
+/build/ol-whitespace.js
 /build/src
 /build/phantomjs-*-windows
 /build/phantomjs-*-windows.zip
@@ -15,6 +16,7 @@
 /build/proj4js
 /examples/*.json
 /examples/*.combined.js
+/examples/*.html.png
 /examples/example-list.js
 /examples/example-list.xml
 /test/requireall.js

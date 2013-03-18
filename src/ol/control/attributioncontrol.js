@@ -8,6 +8,7 @@ goog.require('goog.dom.TagName');
 goog.require('goog.events');
 goog.require('goog.object');
 goog.require('goog.style');
+goog.require('ol');
 goog.require('ol.Attribution');
 goog.require('ol.FrameState');
 goog.require('ol.MapEvent');
@@ -21,21 +22,22 @@ goog.require('ol.source.Source');
 /**
  * @constructor
  * @extends {ol.control.Control}
- * @param {ol.control.AttributionOptions} attributionOptions Attribution
- *     options.
+ * @param {ol.control.AttributionOptions=} opt_options Options.
  */
-ol.control.Attribution = function(attributionOptions) {
+ol.control.Attribution = function(opt_options) {
+
+  var options = goog.isDef(opt_options) ? opt_options : {};
 
   this.ulElement_ = goog.dom.createElement(goog.dom.TagName.UL);
 
   var element = goog.dom.createDom(goog.dom.TagName.DIV, {
-    'class': 'ol-attribution ol-unselectable'
+    'class': 'ol-attribution ' + ol.CSS_CLASS_UNSELECTABLE
   }, this.ulElement_);
 
   goog.base(this, {
     element: element,
-    map: attributionOptions.map,
-    target: attributionOptions.target
+    map: options.map,
+    target: options.target
   });
 
   /**
