@@ -52,7 +52,7 @@ EXAMPLES = [path
             for path in ifind('examples')
             if not path.startswith('examples/standalone/')
             if path.endswith('.html')
-            if path != 'examples/example-list.html'
+            if path != 'examples/index.html'
             if not path.startswith('examples/cesium/')]
 
 EXAMPLES_JSON = [example.replace('.html', '.json')
@@ -129,13 +129,13 @@ def build_ol_js(t):
 
 
 @target('build/ol-simple.js', PLOVR_JAR, SRC, INTERNAL_SRC, 'base.json', 'build/ol.json', 'build/ol-simple.json')
-def build_ol_js(t):
+def build_ol_simple_js(t):
     t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'build/ol-simple.json')
     report_sizes(t)
 
 
 @target('build/ol-whitespace.js', PLOVR_JAR, SRC, INTERNAL_SRC, 'base.json', 'build/ol.json', 'build/ol-whitespace.json')
-def build_ol_js(t):
+def build_ol_whitespace_js(t):
     t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'build/ol-whitespace.json')
     report_sizes(t)
 
@@ -318,7 +318,7 @@ def build_check_requires_timestamp(t):
     all_provides.discard('ol')
     all_provides.discard('ol.Map')
     all_provides.discard('ol.MapProperty')
-    provide_res = dict((provide, re.compile(r'\b%s\b' % (re.escape(provide)),)) for provide in all_provides)
+    provide_res = [(provide, re.compile(r'\b%s\b' % (re.escape(provide)),)) for provide in sorted(all_provides, reverse=True)]
     missing_count = 0
     for filename in sorted(t.dependencies):
         if filename in INTERNAL_SRC or filename in EXTERNAL_SRC:
@@ -335,8 +335,9 @@ def build_check_requires_timestamp(t):
             if m:
                 requires.add(m.group(1))
                 continue
-            for provide, provide_re in provide_res.iteritems():
+            for provide, provide_re in provide_res:
                 if provide_re.search(line):
+                    line = line.replace(provide, '')
                     uses.add(provide)
         if filename == 'src/ol/renderer/layerrenderer.js':
             uses.discard('ol.renderer.Map')
@@ -445,9 +446,8 @@ def hostexamples(t):
     t.cp('build/loader_hosted_examples.js', examples_dir + '/loader.js')
     t.cp('build/ol.js', 'build/ol-simple.js', 'build/ol-whitespace.js',
         'build/ol.css', build_dir)
-    t.cp('examples/example-list.html', examples_dir + '/index.html')
-    t.cp('examples/example-list.js', 'examples/example-list.xml',
-        'examples/Jugl.js', 'examples/jquery.min.js', examples_dir)
+    t.cp('examples/index.html', 'examples/example-list.js', 'examples/example-list.xml',
+        'examples/Jugl.js', 'examples/jquery.min.js', 'examples/social-links.js', examples_dir)
     t.rm_rf('build/gh-pages/%(BRANCH)s/closure-library')
     t.makedirs('build/gh-pages/%(BRANCH)s/closure-library')
     with t.chdir('build/gh-pages/%(BRANCH)s/closure-library'):
@@ -465,7 +465,6 @@ def hostexamples(t):
 
 @target('check-examples', 'hostexamples', phony=True)
 def check_examples(t):
-    directory = 'build/gh-pages/%(BRANCH)s/'
     examples = ['build/gh-pages/%(BRANCH)s/' + e for e in EXAMPLES]
     all_examples = \
         [e + '?mode=raw' for e in examples] + \
@@ -492,7 +491,7 @@ def proj4js_zip(t):
 
 if sys.platform == 'win32':
     @target('test', '%(PHANTOMJS)s', INTERNAL_SRC, PROJ4JS, 'test/requireall.js', phony=True)
-    def test(t):
+    def test_win32(t):
         t.run(PHANTOMJS, 'test/mocha-phantomjs.coffee', 'test/ol.html')
 
     # FIXME the PHANTOMJS should be a pake variable, not a constant
