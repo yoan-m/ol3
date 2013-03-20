@@ -76,6 +76,11 @@ ol.ENABLE_DOM = true;
  */
 ol.ENABLE_WEBGL = true;
 
+/**
+ * @define {boolean} Whether to enable Cesium.
+ */
+ol.ENABLE_CESIUM = true;
+
 
 /**
  * @enum {string}
@@ -94,8 +99,7 @@ ol.RendererHint = {
 ol.DEFAULT_RENDERER_HINTS = [
   ol.RendererHint.WEBGL,
   ol.RendererHint.CANVAS,
-  ol.RendererHint.DOM,
-  ol.RendererHint.CESIUM
+  ol.RendererHint.DOM
 ];
 
 
@@ -904,7 +908,7 @@ ol.Map.createOptionsInternal = function(mapOptions) {
         break;
       }
     } else if (rendererHint == ol.RendererHint.CESIUM) {
-      if (ol.ENABLE_WEBGL && ol.renderer.cesium.SUPPORTED) {
+      if (ol.ENABLE_CESIUM && ol.renderer.cesium.SUPPORTED) {
         rendererConstructor = ol.renderer.cesium.Map;
         break;
       }

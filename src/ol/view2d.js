@@ -14,6 +14,7 @@ goog.require('ol.ResolutionConstraint');
 goog.require('ol.RotationConstraint');
 goog.require('ol.Size');
 goog.require('ol.View');
+goog.require('ol.View3D');
 goog.require('ol.animation');
 goog.require('ol.easing');
 goog.require('ol.projection');
@@ -180,9 +181,36 @@ ol.View2D.prototype.getView2DState = function() {
 
 
 /**
- * FIXME return type
+ * @return {ol.View3D} Is defined.
  */
 ol.View2D.prototype.getView3D = function() {
+    var center = /** @type {ol.Coordinate} */ (this.getCenter());
+    var projection = /** @type {ol.Projection} */ (this.getProjection());
+    var resolution = /** @type {number} */ (this.getResolution());
+    var rotation = /** @type {number} */ (this.getRotation());
+    return new ol.View3D({
+        center: new ol.Coordinate(center.x, center.y),
+        projection: projection,
+        resolution: resolution,
+        rotation: rotation
+    });
+};
+
+/**
+ * @inheritDoc
+ */
+ol.View2D.prototype.getView3DState = function() {
+  goog.asserts.assert(this.isDef());
+  var center = /** @type {ol.Coordinate} */ (this.getCenter());
+  var projection = /** @type {ol.Projection} */ (this.getProjection());
+  var resolution = /** @type {number} */ (this.getResolution());
+  var rotation = /** @type {number} */ (this.getRotation());
+  return {
+    center: new ol.Coordinate(center.x, center.y),
+    projection: projection,
+    resolution: resolution,
+    rotation: rotation
+  };
 };
 
 

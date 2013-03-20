@@ -166,6 +166,23 @@ ol.View3D.prototype.getView2DState = function() {
   };
 };
 
+/**
+ * @inheritDoc
+ */
+ol.View3D.prototype.getView3DState = function() {
+  goog.asserts.assert(this.isDef());
+  var center = /** @type {ol.Coordinate} */ (this.getCenter());
+  var projection = /** @type {ol.Projection} */ (this.getProjection());
+  var resolution = /** @type {number} */ (this.getResolution());
+  var rotation = /** @type {number} */ (this.getRotation());
+  return {
+    center: new ol.Coordinate(center.x, center.y),
+    projection: projection,
+    resolution: resolution,
+    rotation: rotation
+  };
+};
+
 
 /**
  * @inheritDoc

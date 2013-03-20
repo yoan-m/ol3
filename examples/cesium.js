@@ -23,8 +23,10 @@ var map = new ol.Map({
   renderer: ol.RendererHint.WEBGL
 });
 var cesium = new ol.Map({
-  layers: new ol.Collection([layer]),
   target: 'cesium',
-  view: view,
   renderer: ol.RendererHint.CESIUM
 });
+
+cesium.bindTo('layers', map);
+cesium.bindTo('view', map)
+

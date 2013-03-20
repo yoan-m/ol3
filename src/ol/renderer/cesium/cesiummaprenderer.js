@@ -34,6 +34,9 @@ ol.renderer.cesium.Map = function(container, map) {
   this.canvas_.height = container.clientHeight;
   this.canvas_.width = container.clientWidth;
   this.canvas_.className = 'ol-unselectable';
+  this.canvas_.oncontextmenu = function() {
+      return false;
+  };
   goog.dom.insertChildAt(container, this.canvas_, 0);
 
   /**
@@ -68,6 +71,8 @@ ol.renderer.cesium.Map = function(container, map) {
     var camera = that.scene_.getCamera();
 
     var center = view.getCenter();
+    if(center === null)
+        return;
     var positionCart = projection.unproject(center);
 
     positionCart.height = view.getResolution() * TILE_SIZE;
