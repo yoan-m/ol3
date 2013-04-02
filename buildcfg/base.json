@@ -40,11 +40,11 @@
 
   "externs": [
     "//json.js",
-    "externs/bingmaps.js",
-    "externs/geojson.js",
-    "externs/proj4js.js",
-    "externs/tilejson.js",
-    "externs/cesium.js"
+    "../externs/bingmaps.js",
+    "../externs/geojson.js",
+    "../externs/proj4js.js",
+    "../externs/tilejson.js",
+    "../externs/cesium.js"
   ],
 
   "level": "VERBOSE",
@@ -52,8 +52,8 @@
   "mode": "ADVANCED",
 
   "paths": [
-    "build/src/internal/src",
-    "src"
+    "../build/src/internal/src",
+    "../src"
   ],
 
   "treat-warnings-as-errors": false

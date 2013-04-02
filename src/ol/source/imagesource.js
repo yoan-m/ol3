@@ -53,7 +53,7 @@ ol.source.ImageSource = function(options) {
    * @type {?string}
    */
   this.crossOrigin_ =
-      goog.isDef(options.crossOrigin) ? options.crossOrigin : 'anonymous';
+      goog.isDef(options.crossOrigin) ? options.crossOrigin : null;
 
   /**
    * @private
@@ -100,7 +100,7 @@ ol.source.ImageSource.prototype.createImage =
 ol.source.ImageSource.prototype.findNearestResolution =
     function(resolution) {
   if (!goog.isNull(this.resolutions_)) {
-    var idx = ol.array.linearFindNearest(this.resolutions_, resolution);
+    var idx = ol.array.linearFindNearest(this.resolutions_, resolution, 0);
     resolution = this.resolutions_[idx];
   }
   return resolution;

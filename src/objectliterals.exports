@@ -109,17 +109,27 @@
 @exportObjectLiteralProperty ol.layer.LayerOptions.source ol.source.Source
 @exportObjectLiteralProperty ol.layer.LayerOptions.visible boolean|undefined
 
+@exportObjectLiteral ol.layer.TileLayerOptions
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.brightness number|undefined
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.contrast number|undefined
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.hue number|undefined
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.opacity number|undefined
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.preload number|undefined
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.saturation number|undefined
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.source ol.source.Source
+@exportObjectLiteralProperty ol.layer.TileLayerOptions.visible boolean|undefined
+
 @exportObjectLiteral ol.layer.VectorLayerOptions
 @exportObjectLiteralProperty ol.layer.VectorLayerOptions.opacity number|undefined
 @exportObjectLiteralProperty ol.layer.VectorLayerOptions.source ol.source.Source
 @exportObjectLiteralProperty ol.layer.VectorLayerOptions.style ol.style.Style|undefined
 @exportObjectLiteralProperty ol.layer.VectorLayerOptions.visible boolean|undefined
 
-@exportObjectLiteral ol.AnchoredElementOptions
-@exportObjectLiteralProperty ol.AnchoredElementOptions.element Element|undefined
-@exportObjectLiteralProperty ol.AnchoredElementOptions.map ol.Map|undefined
-@exportObjectLiteralProperty ol.AnchoredElementOptions.position ol.Coordinate|undefined
-@exportObjectLiteralProperty ol.AnchoredElementOptions.positioning ol.AnchoredElementPositioning|undefined
+@exportObjectLiteral ol.OverlayOptions
+@exportObjectLiteralProperty ol.OverlayOptions.element Element|undefined
+@exportObjectLiteralProperty ol.OverlayOptions.map ol.Map|undefined
+@exportObjectLiteralProperty ol.OverlayOptions.position ol.Coordinate|undefined
+@exportObjectLiteralProperty ol.OverlayOptions.positioning ol.OverlayPositioning|undefined
 
 @exportObjectLiteral ol.source.BingMapsOptions
 @exportObjectLiteralProperty ol.source.BingMapsOptions.culture string|undefined
@@ -163,7 +173,8 @@
 @exportObjectLiteralProperty ol.source.StaticImageOptions.url string|undefined
 
 @exportObjectLiteral ol.source.TileJSONOptions
-@exportObjectLiteralProperty ol.source.TileJSONOptions.uri string
+@exportObjectLiteralProperty ol.source.TileJSONOptions.crossOrigin null|string|undefined
+@exportObjectLiteralProperty ol.source.TileJSONOptions.url string
 
 @exportObjectLiteral ol.source.TiledWMSOptions
 @exportObjectLiteralProperty ol.source.TiledWMSOptions.attributions Array.<ol.Attribution>|undefined

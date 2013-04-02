@@ -19,24 +19,26 @@ if sys.platform == 'win32':
     Python27 = os.environ.get('SystemDrive', 'C:') + '\\Python27'
     variables.GIT = os.path.join(ProgramFiles_X86, 'Git', 'bin', 'git.exe')
     variables.GJSLINT = os.path.join(Python27, 'Scripts', 'gjslint.exe')
-    variables.JAVA = os.path.join(ProgramFiles, 'Java', 'jre7', 'bin', 'java.exe')
+    variables.JAVA = os.path.join(
+        ProgramFiles, 'Java', 'jre7', 'bin', 'java.exe')
     variables.JSDOC = 'jsdoc'  # FIXME
+    variables.NODE = 'node'
     variables.PYTHON = os.path.join(Python27, 'python.exe')
-    PHANTOMJS_WINDOWS_ZIP = 'build/phantomjs-1.8.1-windows.zip'
-    # FIXME we should not need both a pake variable and a Python constant here
-    # FIXME this requires pake to be modified to lazily evaluate variables in target names
-    variables.PHANTOMJS = 'build/phantomjs-1.8.1-windows/phantomjs.exe'
-    PHANTOMJS = variables.PHANTOMJS
+    variables.PHANTOMJS = 'phantomjs.exe'
 else:
     variables.GIT = 'git'
     variables.GJSLINT = 'gjslint'
     variables.JAVA = 'java'
     variables.JAR = 'jar'
     variables.JSDOC = 'jsdoc'
+    variables.NODE = 'node'
     variables.PYTHON = 'python'
     variables.PHANTOMJS = 'phantomjs'
 
-variables.BRANCH = output('%(GIT)s', 'rev-parse', '--abbrev-ref', 'HEAD').strip()
+TEMPLATE_GLSL_COMPILER_JS = 'build/glsl-unit/bin/template_glsl_compiler.js'
+
+variables.BRANCH = output(
+    '%(GIT)s', 'rev-parse', '--abbrev-ref', 'HEAD').strip()
 
 EXPORTS = [path
            for path in ifind('src')
@@ -50,13 +52,9 @@ EXTERNAL_SRC = [
 
 EXAMPLES = [path
             for path in ifind('examples')
-            if not path.startswith('examples/standalone/')
             if path.endswith('.html')
             if path != 'examples/index.html'
             if not path.startswith('examples/cesium/')]
-
-EXAMPLES_JSON = [example.replace('.html', '.json')
-                 for example in EXAMPLES]
 
 EXAMPLES_SRC = [path
                 for path in ifind('examples')
@@ -69,9 +67,22 @@ EXAMPLES_SRC = [path
                 if path != 'examples/example-list.js'
                 if not path.startswith('examples/cesium')]
 
+EXAMPLES_JSON = ['build/' + example.replace('.html', '.json')
+                 for example in EXAMPLES]
+
+EXAMPLES_COMBINED = ['build/' + example.replace('.html', '.combined.js')
+                     for example in EXAMPLES]
+
 INTERNAL_SRC = [
     'build/src/internal/src/requireall.js',
     'build/src/internal/src/types.js']
+
+GLSL_SRC = [path
+            for path in ifind('src')
+            if path.endswith('.glsl')]
+
+SHADER_SRC = [path.replace('.glsl', 'shader.js')
+              for path in GLSL_SRC]
 
 SPEC = [path
         for path in ifind('test/spec')
@@ -79,7 +90,8 @@ SPEC = [path
 
 SRC = [path
        for path in ifind('src/ol')
-       if path.endswith('.js')]
+       if path.endswith('.js')
+       if path not in SHADER_SRC]
 
 PLOVR_JAR = 'bin/plovr-eba786b34df9.jar'
 PLOVR_JAR_MD5 = '20eac8ccc4578676511cf7ccbfc65100'
@@ -105,10 +117,12 @@ def report_sizes(t):
 virtual('default', 'build')
 
 
-virtual('integration-test', 'lint', 'build', 'build-all', 'test', 'build-examples', 'check-examples', 'doc')
+virtual('integration-test', 'lint', 'build', 'build-all',
+        'test', 'build-examples', 'check-examples', 'doc')
 
 
-virtual('build', 'build/ol.css', 'build/ol.js', 'build/ol-simple.js', 'build/ol-whitespace.js')
+virtual('build', 'build/ol.css', 'build/ol.js',
+        'build/ol-simple.js', 'build/ol-whitespace.js')
 
 
 virtual('check', 'lint', 'build/ol.css', 'build/ol.js', 'test')
@@ -122,45 +136,70 @@ def build_ol_css(t):
     t.touch()
 
 
-@target('build/ol.js', PLOVR_JAR, SRC, EXTERNAL_SRC, 'base.json', 'build/ol.json')
+@target('build/ol.js', PLOVR_JAR, SRC, EXTERNAL_SRC, SHADER_SRC,
+        'buildcfg/base.json', 'buildcfg/ol.json')
 def build_ol_js(t):
-    t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'build/ol.json')
+    t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'buildcfg/ol.json')
     report_sizes(t)
 
 
-@target('build/ol-simple.js', PLOVR_JAR, SRC, INTERNAL_SRC, 'base.json', 'build/ol.json', 'build/ol-simple.json')
+@target('build/ol-simple.js', PLOVR_JAR, SRC, INTERNAL_SRC, SHADER_SRC,
+        'buildcfg/base.json', 'buildcfg/ol.json', 'buildcfg/ol-simple.json')
 def build_ol_simple_js(t):
-    t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'build/ol-simple.json')
+    t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'buildcfg/ol-simple.json')
     report_sizes(t)
 
 
-@target('build/ol-whitespace.js', PLOVR_JAR, SRC, INTERNAL_SRC, 'base.json', 'build/ol.json', 'build/ol-whitespace.json')
+@target('build/ol-whitespace.js', PLOVR_JAR, SRC, INTERNAL_SRC, SHADER_SRC,
+        'buildcfg/base.json', 'buildcfg/ol.json',
+        'buildcfg/ol-whitespace.json')
 def build_ol_whitespace_js(t):
-    t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'build/ol-whitespace.json')
+    t.output('%(JAVA)s', '-jar', PLOVR_JAR,
+             'build', 'buildcfg/ol-whitespace.json')
     report_sizes(t)
 
 
 virtual('build-all', 'build/ol-all.js')
 
 
-@target('build/ol-all.js', PLOVR_JAR, SRC, INTERNAL_SRC, 'base.json', 'build/ol-all.json')
+@target('build/ol-all.js', PLOVR_JAR, SRC, INTERNAL_SRC, SHADER_SRC,
+        'buildcfg/base.json', 'buildcfg/ol-all.json')
 def build_ol_all_js(t):
-    t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'build/ol-all.json')
+    t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'buildcfg/ol-all.json')
 
 
-@target('build/src/external/externs/types.js', 'bin/generate-exports.py', 'src/objectliterals.exports')
+@target('build/src/external/externs/types.js', 'bin/generate-exports.py',
+        'src/objectliterals.exports')
 def build_src_external_externs_types_js(t):
-    t.output('%(PYTHON)s', 'bin/generate-exports.py', '--externs', 'src/objectliterals.exports')
+    t.output('%(PYTHON)s', 'bin/generate-exports.py',
+             '--externs', 'src/objectliterals.exports')
 
 
-@target('build/src/external/src/exports.js', 'bin/generate-exports.py', 'src/objectliterals.exports', EXPORTS)
+@target('build/src/external/src/exports.js', 'bin/generate-exports.py',
+        'src/objectliterals.exports', EXPORTS)
 def build_src_external_src_exports_js(t):
-    t.output('%(PYTHON)s', 'bin/generate-exports.py', '--exports', 'src/objectliterals.exports', EXPORTS)
+    t.output('%(PYTHON)s', 'bin/generate-exports.py',
+             '--exports', 'src/objectliterals.exports', EXPORTS)
 
 
-@target('build/src/external/src/types.js', 'bin/generate-exports', 'src/objectliterals.exports')
+@target('build/src/external/src/types.js', 'bin/generate-exports.py',
+        'src/objectliterals.exports')
 def build_src_external_src_types_js(t):
-    t.output('%(PYTHON)s', 'bin/generate-exports.py', '--typedef', 'src/objectliterals.exports')
+    t.output('%(PYTHON)s', 'bin/generate-exports.py',
+             '--typedef', 'src/objectliterals.exports')
+
+
+if os.path.exists(TEMPLATE_GLSL_COMPILER_JS):
+    for glsl_src in GLSL_SRC:
+        def shader_src_helper(glsl_src):
+            @target(glsl_src.replace('.glsl', 'shader.js'), glsl_src,
+                    'src/ol/webgl/shader.mustache')
+            def shader_src(t):
+                t.run('%(NODE)s', TEMPLATE_GLSL_COMPILER_JS,
+                      '--input', glsl_src,
+                      '--template', 'src/ol/webgl/shader.mustache',
+                      '--output', t.name)
+        shader_src_helper(glsl_src)
 
 
 def _build_require_list(dependencies, output_file_name):
@@ -175,25 +214,27 @@ def _build_require_list(dependencies, output_file_name):
             f.write('goog.require(\'%s\');\n' % (require,))
 
 
-@target('build/src/internal/src/requireall.js', SRC)
+@target('build/src/internal/src/requireall.js', SRC, SHADER_SRC)
 def build_src_internal_src_requireall_js(t):
     _build_require_list(t.dependencies, t.name)
 
 
-@target('test/requireall.js', SPEC)
+@target('build/test/requireall.js', SPEC)
 def build_test_requireall_js(t):
     _build_require_list(t.dependencies, t.name)
 
 
-@target('build/src/internal/src/types.js', 'bin/generate-exports.py', 'src/objectliterals.exports')
+@target('build/src/internal/src/types.js', 'bin/generate-exports.py',
+        'src/objectliterals.exports')
 def build_src_internal_types_js(t):
-    t.output('%(PYTHON)s', 'bin/generate-exports.py', '--typedef', 'src/objectliterals.exports')
+    t.output('%(PYTHON)s', 'bin/generate-exports.py',
+             '--typedef', 'src/objectliterals.exports')
 
 
-virtual('build-examples', 'examples', (path.replace('.html', '.combined.js') for path in EXAMPLES))
+virtual('build-examples', 'examples', EXAMPLES_COMBINED)
 
 
-virtual('examples', 'examples/example-list.xml', 'cesium', (path.replace('.html', '.json') for path in EXAMPLES))
+virtual('examples', 'examples/example-list.xml', 'cesium', EXAMPLES_JSON)
 
 
 @target('examples/example-list.xml', 'examples/example-list.js')
@@ -206,66 +247,77 @@ def examples_examples_list_js(t):
     t.run('%(PYTHON)s', 'bin/exampleparser.py', 'examples', 'examples')
 
 
-@rule(r'\Aexamples/(?P<id>.*).json\Z')
+@rule(r'\Abuild/examples/(?P<id>.*).json\Z')
 def examples_star_json(name, match):
     def action(t):
         content = json.dumps({
             'id': match.group('id'),
-            'inherits': '../base.json',
+            'inherits': '../../buildcfg/base.json',
             'inputs': [
-                'examples/%(id)s.js' % match.groupdict(),
-                'build/src/internal/src/types.js',
+                '../examples/%(id)s.js' % match.groupdict(),
+                '../build/src/internal/src/types.js',
             ],
             'externs': [
                 '//json.js',
                 '//jquery-1.7.js',
-                'externs/bingmaps.js',
-                'externs/bootstrap.js',
-                'externs/geojson.js',
-                'externs/proj4js.js',
-                'externs/tilejson.js',
-                'externs/cesium.js'
+                '../externs/bingmaps.js',
+                '../externs/bootstrap.js',
+                '../externs/geojson.js',
+                '../externs/proj4js.js',
+                '../externs/tilejson.js',
+                '../externs/cesium.js'
             ],
         })
         with open(t.name, 'w') as f:
             f.write(content)
-    dependencies = [__file__, 'base.json']
+    dependencies = [__file__, 'buildcfg/base.json']
     return Target(name, action=action, dependencies=dependencies)
 
 
-@rule(r'\Aexamples/(?P<id>.*).combined.js\Z')
+@rule(r'\Abuild/examples/(?P<id>.*).combined.js\Z')
 def examples_star_combined_js(name, match):
     def action(t):
-        t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build', 'examples/%(id)s.json' % match.groupdict())
+        t.output('%(JAVA)s', '-jar', PLOVR_JAR, 'build',
+                 'build/examples/%(id)s.json' % match.groupdict())
         report_sizes(t)
-    dependencies = [PLOVR_JAR, SRC, INTERNAL_SRC, 'base.json', 'examples/%(id)s.js' % match.groupdict(), 'examples/%(id)s.json' % match.groupdict()]
+    dependencies = [PLOVR_JAR, SRC, INTERNAL_SRC, SHADER_SRC,
+                    'buildcfg/base.json',
+                    'examples/%(id)s.js' % match.groupdict(),
+                    'build/examples/%(id)s.json' % match.groupdict()]
     return Target(name, action=action, dependencies=dependencies)
 
 
-@target('serve', PLOVR_JAR, INTERNAL_SRC, 'test/requireall.js', 'examples')
+@target('serve', PLOVR_JAR, INTERNAL_SRC, 'build/test/requireall.js',
+        'examples')
 def serve(t):
-    t.run('%(JAVA)s', '-jar', PLOVR_JAR, 'serve', 'build/ol.json', 'build/ol-all.json', EXAMPLES_JSON, 'test/test.json')
+    t.run('%(JAVA)s', '-jar', PLOVR_JAR, 'serve', 'buildcfg/ol.json',
+          'buildcfg/ol-all.json', EXAMPLES_JSON, 'buildcfg/test.json')
 
 
 @target('serve-integration-test', PLOVR_JAR, INTERNAL_SRC)
 def serve_precommit(t):
-    t.run('%(JAVA)s', '-jar', PLOVR_JAR, 'serve', 'build/ol-all.json', 'test/test.json')
+    t.run('%(JAVA)s', '-jar', PLOVR_JAR, 'serve',
+          'buildcfg/ol-all.json', 'buildcfg/test.json')
 
 
 virtual('lint', 'build/lint-timestamp', 'build/check-requires-timestamp')
 
 
-@target('build/lint-timestamp', SRC, INTERNAL_SRC, EXTERNAL_SRC, EXAMPLES_SRC, SPEC, precious=True)
+@target('build/lint-timestamp', SRC, INTERNAL_SRC, EXTERNAL_SRC, EXAMPLES_SRC,
+        SPEC, precious=True)
 def build_lint_src_timestamp(t):
-    limited_doc_files = [path
-                         for path in ifind('externs', 'build/src/external/externs')
-                         if path.endswith('.js')]
-    t.run('%(GJSLINT)s', '--strict', '--limited_doc_files=%s' % (','.join(limited_doc_files),), t.newer(t.dependencies))
+    limited_doc_files = [
+        path
+        for path in ifind('externs', 'build/src/external/externs')
+        if path.endswith('.js')]
+    t.run('%(GJSLINT)s', '--strict', '--limited_doc_files=%s' %
+          (','.join(limited_doc_files),), t.newer(t.dependencies))
     t.touch()
 
 
 def _strip_comments(lines):
-    # FIXME this is a horribe hack, we should use a proper JavaScript parser here
+    # FIXME this is a horribe hack, we should use a proper JavaScript parser
+    # here
     in_multiline_comment = False
     lineno = 0
     for line in lines:
@@ -286,7 +338,8 @@ def _strip_comments(lines):
                 yield lineno, line
 
 
-@target('build/check-requires-timestamp', SRC, INTERNAL_SRC, EXTERNAL_SRC, EXAMPLES_SRC, SPEC)
+@target('build/check-requires-timestamp', SRC, INTERNAL_SRC, EXTERNAL_SRC,
+        EXAMPLES_SRC, SHADER_SRC, SPEC)
 def build_check_requires_timestamp(t):
     unused_count = 0
     all_provides = set()
@@ -313,12 +366,14 @@ def build_check_requires_timestamp(t):
                 if require in line:
                     uses.add(require)
         for require in sorted(set(require_linenos.keys()) - uses):
-            t.info('%s:%d: unused goog.require: %r' % (filename, require_linenos[require], require))
+            t.info('%s:%d: unused goog.require: %r' % (
+                filename, require_linenos[require], require))
             unused_count += 1
     all_provides.discard('ol')
     all_provides.discard('ol.Map')
     all_provides.discard('ol.MapProperty')
-    provide_res = [(provide, re.compile(r'\b%s\b' % (re.escape(provide)),)) for provide in sorted(all_provides, reverse=True)]
+    provide_res = [(provide, re.compile(r'\b%s\b' % (re.escape(
+        provide)),)) for provide in sorted(all_provides, reverse=True)]
     missing_count = 0
     for filename in sorted(t.dependencies):
         if filename in INTERNAL_SRC or filename in EXTERNAL_SRC:
@@ -341,16 +396,19 @@ def build_check_requires_timestamp(t):
                     uses.add(provide)
         if filename == 'src/ol/renderer/layerrenderer.js':
             uses.discard('ol.renderer.Map')
-        m = re.match(r'src/ol/renderer/(\w+)/\1(\w*)layerrenderer\.js\Z', filename)
+        m = re.match(
+            r'src/ol/renderer/(\w+)/\1(\w*)layerrenderer\.js\Z', filename)
         if m:
             uses.discard('ol.renderer.Map')
             uses.discard('ol.renderer.%s.Map' % (m.group(1),))
         missing_requires = uses - requires - provides
         if missing_requires:
-            t.info('%s: missing goog.requires: %s', filename, ', '.join(sorted(missing_requires)))
+            t.info('%s: missing goog.requires: %s', filename, ', '.join(
+                sorted(missing_requires)))
             missing_count += len(missing_requires)
     if unused_count or missing_count:
-        t.error('%d unused goog.requires, %d missing goog.requires' % (unused_count, missing_count))
+        t.error('%d unused goog.requires, %d missing goog.requires' %
+                (unused_count, missing_count))
     t.touch()
 
 
@@ -359,8 +417,8 @@ virtual('plovr', PLOVR_JAR)
 
 @target(PLOVR_JAR, clean=False)
 def plovr_jar(t):
-    t.download('https://plovr.googlecode.com/files/' + os.path.basename(PLOVR_JAR), md5=PLOVR_JAR_MD5)
-
+    t.download('https://plovr.googlecode.com/files/' +
+               os.path.basename(PLOVR_JAR), md5=PLOVR_JAR_MD5)
 
 virtual('cesium', CESIUM_DIR)
 
@@ -376,10 +434,11 @@ def cesium_zip(t):
     t.download('http://cesium.agi.com/releases/' + os.path.basename(CESIUM_ZIP))
 
 
-@target('gh-pages', 'hostexamples', 'doc', phony=True)
+@target('gh-pages', 'host-examples', 'doc', phony=True)
 def gh_pages(t):
     with t.tempdir() as tempdir:
-        t.run('%(GIT)s', 'clone', '--branch', 'gh-pages', 'git@github.com:openlayers/ol3.git', tempdir)
+        t.run('%(GIT)s', 'clone', '--branch', 'gh-pages',
+              'git@github.com:openlayers/ol3.git', tempdir)
         with t.chdir(tempdir):
             t.rm_rf('%(BRANCH)s')
         t.cp_r('build/gh-pages/%(BRANCH)s', tempdir + '/%(BRANCH)s')
@@ -392,9 +451,11 @@ def gh_pages(t):
 virtual('doc', 'build/jsdoc-%(BRANCH)s-timestamp' % vars(variables))
 
 
-@target('build/jsdoc-%(BRANCH)s-timestamp' % vars(variables), SRC, ifind('doc/template'))
+@target('build/jsdoc-%(BRANCH)s-timestamp' % vars(variables), SRC, SHADER_SRC,
+        ifind('doc/template'))
 def jsdoc_BRANCH_timestamp(t):
-    t.run('%(JSDOC)s', '-t', 'doc/template', '-r', 'src', '-d', 'build/gh-pages/%(BRANCH)s/apidoc')
+    t.run('%(JSDOC)s', '-t', 'doc/template', '-r',
+          'src', '-d', 'build/gh-pages/%(BRANCH)s/apidoc')
     t.touch()
 
 
@@ -419,8 +480,9 @@ def split_example_file(example, dst_dir):
     target = open(
         os.path.join(dst_dir, os.path.basename(example)), 'w')
     target_require = open(
-        os.path.join(dst_dir,
-            os.path.basename(example).replace('.js', '-require.js')), 'w')
+        os.path.join(dst_dir, os.path.basename(example)
+          .replace('.js', '-require.js')),
+        'w')
 
     target.writelines(target_lines)
     target.close()
@@ -429,8 +491,8 @@ def split_example_file(example, dst_dir):
     target_require.close()
 
 
-@target('hostexamples', 'build', 'examples', phony=True)
-def hostexamples(t):
+@target('host-examples', 'build', 'examples', phony=True)
+def host_examples(t):
     examples_dir = 'build/gh-pages/%(BRANCH)s/examples'
     build_dir = 'build/gh-pages/%(BRANCH)s/build'
     t.rm_rf(examples_dir)
@@ -443,11 +505,12 @@ def hostexamples(t):
     t.cp_r('examples/data', examples_dir + '/data')
     t.cp_r('examples/bootstrap', examples_dir + '/bootstrap')
     t.cp_r('examples/font-awesome', examples_dir + '/font-awesome')
-    t.cp('build/loader_hosted_examples.js', examples_dir + '/loader.js')
+    t.cp('bin/loader_hosted_examples.js', examples_dir + '/loader.js')
     t.cp('build/ol.js', 'build/ol-simple.js', 'build/ol-whitespace.js',
-        'build/ol.css', build_dir)
-    t.cp('examples/index.html', 'examples/example-list.js', 'examples/example-list.xml',
-        'examples/Jugl.js', 'examples/jquery.min.js', 'examples/social-links.js', examples_dir)
+         'build/ol.css', build_dir)
+    t.cp('examples/index.html', 'examples/example-list.js',
+         'examples/example-list.xml', 'examples/Jugl.js',
+         'examples/jquery.min.js', 'examples/social-links.js', examples_dir)
     t.rm_rf('build/gh-pages/%(BRANCH)s/closure-library')
     t.makedirs('build/gh-pages/%(BRANCH)s/closure-library')
     with t.chdir('build/gh-pages/%(BRANCH)s/closure-library'):
@@ -457,13 +520,14 @@ def hostexamples(t):
     t.makedirs('build/gh-pages/%(BRANCH)s/ol')
     t.cp_r('src/ol', 'build/gh-pages/%(BRANCH)s/ol/ol')
     t.run('%(PYTHON)s', 'bin/closure/depswriter.py',
-        '--root_with_prefix', 'src ../../../ol',
-        '--root', 'build/gh-pages/%(BRANCH)s/closure-library/closure/goog',
-        '--root_with_prefix', 'build/gh-pages/%(BRANCH)s/closure-library/third_party ../../third_party',
-        '--output_file', 'build/gh-pages/%(BRANCH)s/build/ol-deps.js')
+          '--root_with_prefix', 'src ../../../ol',
+          '--root', 'build/gh-pages/%(BRANCH)s/closure-library/closure/goog',
+          '--root_with_prefix', 'build/gh-pages/%(BRANCH)s/closure-library/'
+          'third_party ../../third_party',
+          '--output_file', 'build/gh-pages/%(BRANCH)s/build/ol-deps.js')
 
 
-@target('check-examples', 'hostexamples', phony=True)
+@target('check-examples', 'host-examples', phony=True)
 def check_examples(t):
     examples = ['build/gh-pages/%(BRANCH)s/' + e for e in EXAMPLES]
     all_examples = \
@@ -486,28 +550,13 @@ def proj4js(t):
 
 @target(PROJ4JS_ZIP, clean=False)
 def proj4js_zip(t):
-    t.download('http://download.osgeo.org/proj4js/' + os.path.basename(t.name), md5=PROJ4JS_ZIP_MD5)
+    t.download('http://download.osgeo.org/proj4js/' +
+               os.path.basename(t.name), md5=PROJ4JS_ZIP_MD5)
 
 
-if sys.platform == 'win32':
-    @target('test', '%(PHANTOMJS)s', INTERNAL_SRC, PROJ4JS, 'test/requireall.js', phony=True)
-    def test_win32(t):
-        t.run(PHANTOMJS, 'test/mocha-phantomjs.coffee', 'test/ol.html')
-
-    # FIXME the PHANTOMJS should be a pake variable, not a constant
-    @target(PHANTOMJS, PHANTOMJS_WINDOWS_ZIP, clean=False)
-    def phantom_js(t):
-        from zipfile import ZipFile
-        ZipFile(PHANTOMJS_WINDOWS_ZIP).extractall('build')
-
-    @target(PHANTOMJS_WINDOWS_ZIP, clean=False)
-    def phantomjs_windows_zip(t):
-        t.download('http://phantomjs.googlecode.com/files/' + os.path.basename(t.name))
-
-else:
-    @target('test', INTERNAL_SRC, PROJ4JS, 'test/requireall.js', phony=True)
-    def test(t):
-        t.run('%(PHANTOMJS)s', 'test/mocha-phantomjs.coffee', 'test/ol.html')
+@target('test', INTERNAL_SRC, PROJ4JS, 'build/test/requireall.js', phony=True)
+def test(t):
+    t.run('%(PHANTOMJS)s', 'test/mocha-phantomjs.coffee', 'test/ol.html')
 
 
 @target('fixme', phony=True)
@@ -521,7 +570,8 @@ def find_fixme(t):
             if regex.search(line):
                 if (filename not in matches):
                     matches[filename] = list()
-                matches[filename].append('#%-10d %s' % (lineno + 1, line.strip()))
+                matches[filename].append('#%-10d %s' % (
+                    lineno + 1, line.strip()))
                 totalcount += 1
         f.close()
 
