@@ -137,8 +137,8 @@ ol.renderer.cesium.ImageryProvider.prototype.requestImage =
     tileGrid = ol.tilegrid.getForProjection(projection);
   }
   var coord = new ol.TileCoord(level, x, -y - 1);
-  var tile = this.source_.getTile(coord.z,coord.x, coord.y, tileGrid,
-          projection);
+  var tile = this.source_.getTile(coord.z, coord.x, coord.y, tileGrid,
+      projection);
   if (typeof tile !== 'undefined' && typeof tile.getKey() !== 'undefined') {
     return Cesium.ImageryProvider.loadImage(tile.getKey());
   }

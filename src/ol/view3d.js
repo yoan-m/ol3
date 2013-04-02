@@ -396,6 +396,7 @@ ol.View3D.prototype.zoom =
   this.zoomWithoutConstraints(map, resolution, opt_anchor, opt_duration);
 };
 
+
 /**
  * @param {ol.Map} map Map.
  * @param {number|undefined} resolution Resolution to go to.
