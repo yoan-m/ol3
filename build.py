@@ -96,7 +96,7 @@ SRC = [path
 PLOVR_JAR = 'bin/plovr-eba786b34df9.jar'
 PLOVR_JAR_MD5 = '20eac8ccc4578676511cf7ccbfc65100'
 
-CESIUM_ZIP = 'examples/Cesium-b12a.zip'
+CESIUM_ZIP = 'examples/Cesium-b14.zip'
 CESIUM_DIR = 'examples/cesium'
 
 PROJ4JS = 'build/proj4js/lib/proj4js-combined.js'
