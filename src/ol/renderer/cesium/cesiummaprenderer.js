@@ -35,7 +35,7 @@ ol.renderer.cesium.Map = function(container, map) {
   this.canvas_.width = container.clientWidth;
   this.canvas_.className = 'ol-unselectable';
   this.canvas_.oncontextmenu = function() {
-      return false;
+    return false;
   };
   goog.dom.insertChildAt(container, this.canvas_, 0);
 
@@ -49,16 +49,12 @@ ol.renderer.cesium.Map = function(container, map) {
   var cb = new Cesium.CentralBody(ellipsoid);
   this.scene_.getPrimitives().setCentralBody(cb);
 
-  // TODO get correct projection
-  this.scene_.scene2D.projection = new Cesium.WebMercatorProjection(ellipsoid);
   this.scene_._screenSpaceCameraController =
       this.scene_._screenSpaceCameraController &&
       this.scene_._screenSpaceCameraController.destroy();
   this.scene_._screenSpaceCameraController = {
     update: function() {}
   };
-  // TODO get tile size
-  var TILE_SIZE = 256;
 
   var that = this;
   function updateCesiumCamera() {
@@ -66,27 +62,17 @@ ol.renderer.cesium.Map = function(container, map) {
     if (typeof view === 'undefined') {
       return;
     }
-
-    var projection = that.scene_.scene2D.projection;
+    view = view.getView3D();
+    var center = view.getCenter();
+    var direction = view.getDirection();
+    var up = view.getUp();
+    var right = view.getRight();
     var camera = that.scene_.getCamera();
 
-    var center = view.getCenter();
-    if(center === null)
-        return;
-    var positionCart = projection.unproject(center);
-
-    positionCart.height = view.getResolution() * TILE_SIZE;
-    ellipsoid.cartographicToCartesian(positionCart, camera.position);
-    Cesium.Cartesian3.negate(camera.position, camera.direction);
-    Cesium.Cartesian3.normalize(camera.direction, camera.direction);
-    Cesium.Cartesian3.cross(camera.direction, Cesium.Cartesian3.UNIT_Z,
-                            camera.right);
-    Cesium.Cartesian3.cross(camera.right, camera.direction, camera.up);
-    var angle = view.getRotation();
-    var rotation = Cesium.Matrix3.fromQuaternion(Cesium.Quaternion
-                .fromAxisAngle(camera.direction, angle));
-    Cesium.Matrix3.multiplyByVector(rotation, camera.up, camera.up);
-    Cesium.Cartesian3.cross(camera.direction, camera.up, camera.right);
+    Cesium.Cartesian3.clone(center, camera.position);
+    Cesium.Cartesian3.clone(direction, camera.direction);
+    Cesium.Cartesian3.clone(up, camera.up);
+    Cesium.Cartesian3.clone(right, camera.right);
   }
 
   function tick() {

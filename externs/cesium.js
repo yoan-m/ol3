@@ -119,6 +119,13 @@ Cesium.Cartesian3.cross = function(left, right, result) {};
 Cesium.Cartesian3.dot = function(left, right) {};
 
 
+/**
+ * @param {Cesium.Cartesian3} cartesian The Cartesian to duplicate.
+ * @param {Cesium.Cartesian3} result The object onto which to store the result.
+ * @return {Cesium.Cartesian3}
+ */
+Cesium.Cartesian3.clone = function(cartesian, result) {};
+
 
 /**
  * @constructor

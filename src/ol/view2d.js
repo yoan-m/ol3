@@ -4,6 +4,9 @@
 goog.provide('ol.View2D');
 goog.provide('ol.View2DProperty');
 
+goog.require('goog.vec.Mat3');
+goog.require('goog.vec.Quaternion');
+goog.require('goog.vec.Vec3');
 goog.require('ol.Constraints');
 goog.require('ol.Coordinate');
 goog.require('ol.Extent');
@@ -17,7 +20,9 @@ goog.require('ol.View');
 goog.require('ol.View3D');
 goog.require('ol.animation');
 goog.require('ol.easing');
+goog.require('ol.ellipsoid.WGS84');
 goog.require('ol.projection');
+goog.require('ol.vec.Mat3');
 
 
 /**
@@ -69,6 +74,9 @@ ol.View2D = function(opt_view2DOptions) {
    * @type {ol.Constraints}
    */
   this.constraints_ = ol.View2D.createConstraints_(view2DOptions);
+  if (goog.isDef(view2DOptions.view3D)) {
+    this._view3D = view2DOptions.view3D;
+  }
 
 };
 goog.inherits(ol.View2D, ol.View);
@@ -184,33 +192,7 @@ ol.View2D.prototype.getView2DState = function() {
  * @return {ol.View3D} Is defined.
  */
 ol.View2D.prototype.getView3D = function() {
-    var center = /** @type {ol.Coordinate} */ (this.getCenter());
-    var projection = /** @type {ol.Projection} */ (this.getProjection());
-    var resolution = /** @type {number} */ (this.getResolution());
-    var rotation = /** @type {number} */ (this.getRotation());
-    return new ol.View3D({
-        center: new ol.Coordinate(center.x, center.y),
-        projection: projection,
-        resolution: resolution,
-        rotation: rotation
-    });
-};
-
-/**
- * @inheritDoc
- */
-ol.View2D.prototype.getView3DState = function() {
-  goog.asserts.assert(this.isDef());
-  var center = /** @type {ol.Coordinate} */ (this.getCenter());
-  var projection = /** @type {ol.Projection} */ (this.getProjection());
-  var resolution = /** @type {number} */ (this.getResolution());
-  var rotation = /** @type {number} */ (this.getRotation());
-  return {
-    center: new ol.Coordinate(center.x, center.y),
-    projection: projection,
-    resolution: resolution,
-    rotation: rotation
-  };
+  return this.createView3D_();
 };
 
 
@@ -439,6 +421,66 @@ ol.View2D.prototype.zoomWithoutConstraints =
 
 /**
  * @private
+ * @return {ol.View3D} Constraints.
+ */
+ol.View2D.prototype.createView3D_ = function() {
+  var center = /** @type {ol.Coordinate} */ (this.getCenter());
+  var projection = /** @type {ol.Projection} */ (this.getProjection());
+  var resolution = /** @type {number} */ (this.getResolution());
+  var newCenter = ol.projection.transform(center, projection,
+      ol.projection.get('EPSG:3857'));
+  newCenter.z = resolution * ol.DEFAULT_TILE_SIZE;
+
+  //unproject
+  var cartographic = projection.unproject(ol.ellipsoid.WGS84, newCenter);
+
+  //cartographicToCartesian
+  //TODO cartographic should be it's own type and not use ol.Coordinate.
+  //TODO can we pass goog.vec.Vec3 around?
+  var cartesian = ol.ellipsoid.WGS84.cartographicToCartesian(
+      cartographic.x,
+      cartographic.y,
+      cartographic.z);
+  var result = goog.vec.Vec3.createNumber();
+  goog.vec.Vec3.setFromValues(result, cartesian.x, cartesian.y, cartesian.z);
+  //camera stuff
+  var unitZ = goog.vec.Vec3.createNumber();
+  goog.vec.Vec3.setFromValues(unitZ, 0.0, 0.0, 1.0);
+
+  var d = goog.vec.Vec3.createNumber();
+  var r = goog.vec.Vec3.createNumber();
+  var u = goog.vec.Vec3.createNumber();
+  goog.vec.Vec3.negate(result, d);
+  goog.vec.Vec3.normalize(d, d);
+  goog.vec.Vec3.cross(d, unitZ, r);
+  goog.vec.Vec3.cross(r, d, u);
+  var angle = /** @type {number} */ (this.getRotation());
+
+  var quat = goog.vec.Quaternion.createNumber();
+  var rotation = goog.vec.Mat3.createNumber();
+  goog.vec.Quaternion.fromAngleAxis(angle, d, quat);
+  ol.vec.Mat3.fromQuaternion(quat, rotation);
+  goog.vec.Mat3.multVec3(rotation, u, u);
+  goog.vec.Vec3.cross(d, u, r);
+
+  center = new ol.Coordinate(result[0], result[1], result[2]);
+  var direction = new ol.Coordinate(d[0], d[1], d[2]);
+  var right = new ol.Coordinate(r[0], r[1], r[2]);
+  var up = new ol.Coordinate(u[0], u[1], u[2]);
+
+  return new ol.View3D({
+    center: center,
+    projection: ol.projection.get('EPSG:3857'),
+    resolution: resolution,
+    direction: direction,
+    right: right,
+    up: up
+  });
+};
+
+
+/**
+ * @private
  * @param {ol.View2DOptions} view2DOptions View2D options.
  * @return {ol.Constraints} Constraints.
  */
@@ -470,4 +512,25 @@ ol.View2D.createConstraints_ = function(view2DOptions) {
   // FIXME rotation constraint is not configurable at the moment
   var rotationConstraint = ol.RotationConstraint.createSnapToZero();
   return new ol.Constraints(resolutionConstraint, rotationConstraint);
+};
+
+
+/**
+ * @return {ol.Coordinate|undefined} 3D map direction.
+ */
+ol.View2D.prototype.getDirection = function() {
+};
+
+
+/**
+ * @return {ol.Coordinate|undefined} 3D map right.
+ */
+ol.View2D.prototype.getRight = function() {
+};
+
+
+/**
+ * @return {ol.Coordinate|undefined} 3D map up.
+ */
+ol.View2D.prototype.getUp = function() {
 };

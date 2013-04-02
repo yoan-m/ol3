@@ -11,7 +11,7 @@ goog.require('ol.ResolutionConstraint');
 goog.require('ol.RotationConstraint');
 goog.require('ol.Size');
 goog.require('ol.View');
-goog.require('ol.animation');
+goog.require('ol.ellipsoid.WGS84');
 goog.require('ol.projection');
 
 
@@ -21,6 +21,9 @@ goog.require('ol.projection');
 ol.View3DProperty = {
   CENTER: 'center',
   PROJECTION: 'projection',
+  DIRECTION: 'direction',
+  RIGHT: 'right',
+  UP: 'up',
   RESOLUTION: 'resolution',
   ROTATION: 'rotation'
 };
@@ -46,6 +49,12 @@ ol.View3D = function(opt_view3DOptions) {
       view3DOptions.center : null;
   values[ol.View3DProperty.PROJECTION] = ol.projection.createProjection(
       view3DOptions.projection, 'EPSG:3857');
+  values[ol.View3DProperty.DIRECTION] = goog.isDef(view3DOptions.direction) ?
+          view3DOptions.direction : null;
+  values[ol.View3DProperty.RIGHT] = goog.isDef(view3DOptions.right) ?
+          view3DOptions.right : null;
+  values[ol.View3DProperty.UP] = goog.isDef(view3DOptions.up) ?
+          view3DOptions.up : null;
   if (goog.isDef(view3DOptions.resolution)) {
     values[ol.View3DProperty.RESOLUTION] = view3DOptions.resolution;
   } else if (goog.isDef(view3DOptions.zoom)) {
@@ -57,6 +66,8 @@ ol.View3D = function(opt_view3DOptions) {
         size / (ol.DEFAULT_TILE_SIZE * Math.pow(2, view3DOptions.zoom));
   }
   values[ol.View3DProperty.ROTATION] = view3DOptions.rotation;
+
+
   this.setValues(values);
 
   /**
@@ -64,7 +75,21 @@ ol.View3D = function(opt_view3DOptions) {
    * @type {ol.Constraints}
    */
   this.constraints_ = ol.View3D.createConstraints_(view3DOptions);
-
+  if (goog.isDef(view3DOptions.view2D)) {
+    this._view2D = view3DOptions.view2D;
+  }
+  else {
+    var cartographicCoord =
+        /**@type{ol.Coordinate}**/
+        ol.ellipsoid.WGS84.cartesianToCartographic(this.getCenter());
+    var cartesian = this.getProjection().project(ol.ellipsoid.WGS84,
+        cartographicCoord);
+    this._view2d = new ol.View2D({
+      center: cartesian,
+      resolution: cartesian.z / ol.DEFAULT_TILE_SIZE,
+      view3D: this
+    });
+  }
 };
 goog.inherits(ol.View3D, ol.View);
 
@@ -80,6 +105,45 @@ goog.exportProperty(
     ol.View3D.prototype,
     'getCenter',
     ol.View3D.prototype.getCenter);
+
+
+/**
+ * @inheritDoc
+ */
+ol.View3D.prototype.getDirection = function() {
+  return /** @type {ol.Coordinate|undefined} */ (
+      this.get(ol.View3DProperty.DIRECTION));
+};
+goog.exportProperty(
+    ol.View3D.prototype,
+    'getDirection',
+    ol.View3D.prototype.getDirection);
+
+
+/**
+ * @inheritDoc
+ */
+ol.View3D.prototype.getRight = function() {
+  return /** @type {ol.Coordinate|undefined} */ (
+      this.get(ol.View3DProperty.RIGHT));
+};
+goog.exportProperty(
+    ol.View3D.prototype,
+    'getRight',
+    ol.View3D.prototype.getRight);
+
+
+/**
+ * @inheritDoc
+ */
+ol.View3D.prototype.getUp = function() {
+  return /** @type {ol.Coordinate|undefined} */ (
+      this.get(ol.View3DProperty.UP));
+};
+goog.exportProperty(
+    ol.View3D.prototype,
+    'getUp',
+    ol.View3D.prototype.getUp);
 
 
 /**
@@ -166,23 +230,6 @@ ol.View3D.prototype.getView2DState = function() {
   };
 };
 
-/**
- * @inheritDoc
- */
-ol.View3D.prototype.getView3DState = function() {
-  goog.asserts.assert(this.isDef());
-  var center = /** @type {ol.Coordinate} */ (this.getCenter());
-  var projection = /** @type {ol.Projection} */ (this.getProjection());
-  var resolution = /** @type {number} */ (this.getResolution());
-  var rotation = /** @type {number} */ (this.getRotation());
-  return {
-    center: new ol.Coordinate(center.x, center.y),
-    projection: projection,
-    resolution: resolution,
-    rotation: rotation
-  };
-};
-
 
 /**
  * @inheritDoc
@@ -196,6 +243,16 @@ ol.View3D.prototype.getView3D = function() {
  * @inheritDoc
  */
 ol.View3D.prototype.getView2D = function() {
+  var view2d = this._view2d;
+  var cartographicCoord =
+      /**@type{ol.Coordinate}**/
+      ol.ellipsoid.WGS84.cartesianToCartographic(this.getCenter());
+  var cartesian = this.getProjection().project(ol.ellipsoid.WGS84,
+      cartographicCoord);
+
+  view2d.setCenter(cartesian);
+  view2d.setResolution(cartesian.z / ol.DEFAULT_TILE_SIZE);
+  return view2d;
 };
 
 

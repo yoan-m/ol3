@@ -123,6 +123,22 @@ ol.Projection.prototype.getPointResolution = goog.abstractMethod;
 
 
 /**
+ * @param {ol.Ellipsoid} ellipsoid Ellipsoid.
+ * @param {ol.Coordinate} cartesian Point.
+ * @return {ol.Coordinate} cartographic Point.
+ */
+ol.Projection.prototype.unproject = goog.abstractMethod;
+
+
+/**
+ * @param {ol.Ellipsoid} ellipsoid Ellipsoid.
+ * @param {ol.Coordinate} cartographic Point.
+ * @return {ol.Coordinate} cartesian point.
+ */
+ol.Projection.prototype.project = goog.abstractMethod;
+
+
+/**
  * @return {ol.ProjectionUnits} Units.
  */
 ol.Projection.prototype.getUnits = function() {

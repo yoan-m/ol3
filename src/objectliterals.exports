@@ -17,17 +17,15 @@
 @exportObjectLiteralProperty ol.View2DOptions.rotation number|undefined
 @exportObjectLiteralProperty ol.View2DOptions.zoom number|undefined
 @exportObjectLiteralProperty ol.View2DOptions.zoomFactor number|undefined
+@exportObjectLiteralProperty ol.View2DOptions.view3D ol.View3D|undefined
 
 @exportObjectLiteral ol.View3DOptions
 @exportObjectLiteralProperty ol.View3DOptions.center ol.Coordinate|undefined
-@exportObjectLiteralProperty ol.View3DOptions.maxResolution number|undefined
-@exportObjectLiteralProperty ol.View3DOptions.numZoomLevels number|undefined
+@exportObjectLiteralProperty ol.View3DOptions.direction ol.Coordinate|undefined
+@exportObjectLiteralProperty ol.View3DOptions.right ol.Coordinate|undefined
 @exportObjectLiteralProperty ol.View3DOptions.projection ol.ProjectionLike
-@exportObjectLiteralProperty ol.View3DOptions.resolution number|undefined
-@exportObjectLiteralProperty ol.View3DOptions.resolutions Array.<number>|undefined
-@exportObjectLiteralProperty ol.View3DOptions.rotation number|undefined
-@exportObjectLiteralProperty ol.View3DOptions.zoom number|undefined
-@exportObjectLiteralProperty ol.View3DOptions.zoomFactor number|undefined
+@exportObjectLiteralProperty ol.View3DOptions.up ol.Coordinate|undefined
+@exportObjectLiteralProperty ol.View3DOptions.view2D ol.View2D|undefined
 
 @exportObjectLiteral ol.animation.BounceOptions
 @exportObjectLiteralProperty ol.animation.BounceOptions.resolution number

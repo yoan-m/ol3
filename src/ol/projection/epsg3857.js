@@ -1,6 +1,7 @@
 goog.provide('ol.projection.EPSG3857');
 
 goog.require('goog.array');
+goog.require('ol.Coordinate');
 goog.require('ol.Extent');
 goog.require('ol.Projection');
 goog.require('ol.ProjectionUnits');
@@ -36,7 +37,45 @@ ol.projection.EPSG3857.RADIUS = 6378137;
  * @const
  * @type {number}
  */
+ol.projection.EPSG3857.PI_OVER_TWO = Math.PI * 0.5;
+
+
+/**
+ * @const
+ * @type {number}
+ */
 ol.projection.EPSG3857.HALF_SIZE = Math.PI * ol.projection.EPSG3857.RADIUS;
+
+
+/**
+ * Converts a Mercator angle, in the range -PI to PI, to a geodetic latitude
+ * in the range -PI/2 to PI/2.
+ * @param {number} mercatorAngle Angle to convert.
+ * @return {number} The geodetic latitude equivalent.
+ */
+ol.projection.EPSG3857.mercatorAngleToGeodeticLatitude =
+    function(mercatorAngle) {
+  return ol.projection.EPSG3857.PI_OVER_TWO -
+      (2.0 * Math.atan(Math.exp(-mercatorAngle)));
+};
+
+
+/**
+ * The maximum latitude (both North and South) supported by a Web Mercator
+ * (EPSG:3857) projection.  Technically, the Mercator projection is defined
+ * for any latitude up to (but not including) 90 degrees, but it makes sense
+ * to cut it off sooner because it grows exponentially with increasing latitude.
+ * The logic behind this particular cutoff value, which is the one used by
+ * Google Maps, Bing Maps, and Esri, is that it makes the projection
+ * square.  That is, the extent is equal in the X and Y directions.
+ *
+ * The constant value is computed by calling:
+ *    WebMercatorProjection.mercatorAngleToGeodeticLatitude(Math.PI)
+ * @const
+ * @type {number}
+ */
+ol.projection.EPSG3857.MAXIMUM_LATITUDE =
+    ol.projection.EPSG3857.mercatorAngleToGeodeticLatitude(Math.PI);
 
 
 /**
@@ -142,3 +181,53 @@ ol.projection.EPSG3857.prototype.getPointResolution =
     function(resolution, point) {
   return resolution / ol.math.cosh(point.y / ol.projection.EPSG3857.RADIUS);
 };
+
+
+/**
+ * @inheritDoc
+ */
+ol.projection.EPSG3857.prototype.unproject =
+    function(ellipsoid, cartesian) {
+  var semimajorAxis = ellipsoid.getMaximumRadius();
+  var oneOverEarthSemimajorAxis = 1.0 / semimajorAxis;
+  var longitude = cartesian.x * oneOverEarthSemimajorAxis;
+  var latitude =
+      ol.projection.EPSG3857.mercatorAngleToGeodeticLatitude(cartesian.y *
+              oneOverEarthSemimajorAxis);
+  var height = cartesian.z;
+  return new ol.Coordinate(longitude, latitude, height);
+};
+
+
+/**
+ * Converts a geodetic latitude in radians, in the range -PI/2 to PI/2,
+ * to a Mercator angle in the range -PI to PI.
+ * @param {number} latitude The geodetic latitude in radians.
+ * @return {number} Angle.
+ */
+ol.projection.EPSG3857.geodeticLatitudeToMercatorAngle = function(latitude) {
+  // Clamp the latitude coordinate to the valid Mercator bounds.
+  if (latitude > ol.projection.EPSG3857.MAXIMUM_LATITUDE) {
+    latitude = ol.projection.EPSG3857.MAXIMUM_LATITUDE;
+  } else if (latitude < -ol.projection.EPSG3857.MAXIMUM_LATITUDE) {
+    latitude = -ol.projection.EPSG3857.MAXIMUM_LATITUDE;
+  }
+  var sinLatitude = Math.sin(latitude);
+  return 0.5 * Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude));
+};
+
+
+/**
+ * @inheritDoc
+ */
+ol.projection.EPSG3857.prototype.project =
+    function(ellipsoid, cartographic) {
+  var semimajorAxis = ellipsoid.getMaximumRadius();
+  var x = cartographic.x * semimajorAxis;
+  var y =
+      ol.projection.EPSG3857.geodeticLatitudeToMercatorAngle(cartographic.y) *
+          semimajorAxis;
+  var z = cartographic.z;
+  return new ol.Coordinate(x, y, z);
+};
+
