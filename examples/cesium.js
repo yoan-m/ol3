@@ -1,7 +1,3 @@
-goog.require('goog.debug.Console');
-goog.require('goog.debug.Logger');
-goog.require('goog.debug.Logger.Level');
-goog.require('ol.Collection');
 goog.require('ol.Coordinate');
 goog.require('ol.Map');
 goog.require('ol.View3D');
@@ -10,9 +6,6 @@ goog.require('ol.layer.TileLayer');
 goog.require('ol.source.MapQuestOpenAerial');
 
 
-var layer = new ol.layer.TileLayer({
-  source: new ol.source.MapQuestOpenAerial()
-});
 /*var view = new ol.View3D({
   center: new ol.Coordinate(26415645.342789244, 0, 0),
   direction : new ol.Coordinate(-1, 0, 0),
@@ -36,15 +29,18 @@ var map = new ol.Map({
 map.bindTo('layers', cesium);
 map.bindTo('view', cesium)*/
 
-var view = new ol.View2D({
-  center: new ol.Coordinate(0, 0),
-  zoom: 1
-});
 var map = new ol.Map({
-  layers: new ol.Collection([layer]),
+  layers: [
+    new ol.layer.TileLayer({
+      source: new ol.source.MapQuestOpenAerial()
+    })
+  ],
+  renderer: ol.RendererHint.WEBGL,
   target: 'ol3',
-  view: view,
-  renderer: ol.RendererHint.WEBGL
+  view: new ol.View2D({
+    center: new ol.Coordinate(0, 0),
+    zoom: 1
+  })
 });
 var cesium = new ol.Map({
   target: 'cesium',
@@ -52,5 +48,4 @@ var cesium = new ol.Map({
 });
 
 cesium.bindTo('layers', map);
-cesium.bindTo('view', map)
-
+cesium.bindTo('view', map);
