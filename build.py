@@ -431,7 +431,9 @@ def cesium_dir(t):
 
 @target(CESIUM_ZIP, clean=False)
 def cesium_zip(t):
+    t.info('downloading %r', t.name)
     t.download('http://cesium.agi.com/releases/' + os.path.basename(CESIUM_ZIP))
+    t.info('downloaded %r', t.name)
 
 
 @target('gh-pages', 'host-examples', 'doc', phony=True)
