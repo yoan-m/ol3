@@ -131,9 +131,14 @@ ol.renderer.cesium.ImageryProvider.prototype.getLogo = function() {
  */
 ol.renderer.cesium.ImageryProvider.prototype.requestImage =
     function(x, y, level) {
+  var tileGrid = this.source_.getTileGrid();
+  var projection = this.source_.getProjection();
+  if (goog.isNull(tileGrid)) {
+    tileGrid = ol.tilegrid.getForProjection(projection);
+  }
   var coord = new ol.TileCoord(level, x, -y - 1);
-  var tile = this.source_.getTile(coord, this.source_.getTileGrid(),
-          this.source_.getProjection());
+  var tile = this.source_.getTile(coord.z,coord.x, coord.y, tileGrid,
+          projection);
   if (typeof tile !== 'undefined' && typeof tile.getKey() !== 'undefined') {
     return Cesium.ImageryProvider.loadImage(tile.getKey());
   }

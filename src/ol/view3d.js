@@ -263,7 +263,7 @@ ol.View3D.prototype.getView2D = function() {
 ol.View3D.prototype.fitExtent = function(extent, size) {
   this.setCenter(extent.getCenter());
   var resolution = this.getResolutionForExtent(extent, size);
-  resolution = this.constraints_.resolution(resolution, 0);
+  resolution = this.constraints_.resolution(resolution, 0, 0);
   this.setResolution(resolution);
 };
 
@@ -377,21 +377,67 @@ ol.View3D.prototype.zoom_ = function(map, resolution, opt_anchor) {
 
 /**
  * @param {ol.Map} map Map.
- * @param {number} delta Delta from previous zoom level.
+ * @param {number|undefined} resolution Resolution to go to.
+ * @param {ol.Coordinate=} opt_anchor Anchor coordinate.
+ * @param {number=} opt_duration Duration.
+ * @param {number=} opt_direction Zooming direction; > 0 indicates
+ *     zooming out, in which case the constraints system will select
+ *     the largest nearest resolution; < 0 indicates zooming in, in
+ *     which case the constraints system will select the smallest
+ *     nearest resolution; == 0 indicates that the zooming direction
+ *     is unknown/not relevant, in which case the constraints system
+ *     will select the nearest resolution. If not defined 0 is
+ *     assumed.
+ */
+ol.View3D.prototype.zoom =
+    function(map, resolution, opt_anchor, opt_duration, opt_direction) {
+  var direction = opt_direction || 0;
+  resolution = this.constraints_.resolution(resolution, 0, direction);
+  this.zoomWithoutConstraints(map, resolution, opt_anchor, opt_duration);
+};
+
+/**
+ * @param {ol.Map} map Map.
+ * @param {number|undefined} resolution Resolution to go to.
  * @param {ol.Coordinate=} opt_anchor Anchor coordinate.
  * @param {number=} opt_duration Duration.
  */
-ol.View3D.prototype.zoom = function(map, delta, opt_anchor, opt_duration) {
-  var currentResolution = this.getResolution();
-  if (goog.isDef(currentResolution) && goog.isDef(opt_duration)) {
-    map.requestRenderFrame();
-    map.addPreRenderFunction(ol.animation.zoom({
-      resolution: currentResolution,
-      duration: opt_duration
-    }));
+ol.View3D.prototype.zoomWithoutConstraints =
+    function(map, resolution, opt_anchor, opt_duration) {
+  if (goog.isDefAndNotNull(resolution)) {
+    var currentResolution = this.getResolution();
+    var currentCenter = this.getCenter();
+    if (goog.isDef(currentResolution) && goog.isDef(currentCenter) &&
+        goog.isDef(opt_duration)) {
+      map.requestRenderFrame();
+      map.addPreRenderFunction(ol.animation.zoom({
+        resolution: currentResolution,
+        duration: opt_duration,
+        easing: ol.easing.easeOut
+      }));
+      if (goog.isDef(opt_anchor)) {
+        map.addPreRenderFunction(ol.animation.pan({
+          source: currentCenter,
+          duration: opt_duration,
+          easing: ol.easing.easeOut
+        }));
+      }
+    }
+    if (goog.isDefAndNotNull(opt_anchor)) {
+      var anchor = opt_anchor;
+      var oldCenter = /** @type {!ol.Coordinate} */ (this.getCenter());
+      var oldResolution = this.getResolution();
+      var x = anchor.x - resolution * (anchor.x - oldCenter.x) / oldResolution;
+      var y = anchor.y - resolution * (anchor.y - oldCenter.y) / oldResolution;
+      var center = new ol.Coordinate(x, y);
+      map.withFrozenRendering(function() {
+        this.setCenter(center);
+        this.setResolution(resolution);
+      }, this);
+    } else {
+      this.setResolution(resolution);
+    }
   }
-  var resolution = this.constraints_.resolution(currentResolution, delta);
-  this.zoom_(map, resolution, opt_anchor);
 };
 
 
@@ -401,7 +447,7 @@ ol.View3D.prototype.zoom = function(map, delta, opt_anchor, opt_duration) {
  * @param {ol.Coordinate=} opt_anchor Anchor coordinate.
  */
 ol.View3D.prototype.zoomToResolution = function(map, resolution, opt_anchor) {
-  resolution = this.constraints_.resolution(resolution, 0);
+  resolution = this.constraints_.resolution(resolution, 0, 0);
   this.zoom_(map, resolution, opt_anchor);
 };
 
