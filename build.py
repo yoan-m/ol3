@@ -395,6 +395,9 @@ def build_check_requires_timestamp(t):
                     uses.add(provide)
         if filename == 'src/ol/renderer/layerrenderer.js':
             uses.discard('ol.renderer.Map')
+        # FIXME remove following horrible circular dependency hack
+        if filename == 'src/ol/view3d.js':
+            uses.discard('ol.View2D')
         m = re.match(
             r'src/ol/renderer/(\w+)/\1(\w*)layerrenderer\.js\Z', filename)
         if m:

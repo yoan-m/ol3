@@ -11,7 +11,7 @@ goog.require('ol.ResolutionConstraint');
 goog.require('ol.RotationConstraint');
 goog.require('ol.Size');
 goog.require('ol.View');
-goog.require('ol.View2D');
+//goog.require('ol.View2D');
 goog.require('ol.animation');
 goog.require('ol.easing');
 goog.require('ol.ellipsoid.WGS84');
