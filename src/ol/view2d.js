@@ -189,7 +189,7 @@ ol.View2D.prototype.getView2DState = function() {
 
 
 /**
- * @return {ol.View3D} Is defined.
+ * @inheritDoc
  */
 ol.View2D.prototype.getView3D = function() {
   return this.createView3D_();
@@ -430,7 +430,7 @@ ol.View2D.prototype.zoomWithoutConstraints =
 
 /**
  * @private
- * @return {ol.View3D} Constraints.
+ * @return {ol.IView3D} View 3D.
  */
 ol.View2D.prototype.createView3D_ = function() {
   var center = /** @type {ol.Coordinate} */ (this.getCenter());

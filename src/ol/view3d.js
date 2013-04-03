@@ -53,11 +53,11 @@ ol.View3D = function(opt_view3DOptions) {
   values[ol.View3DProperty.PROJECTION] = ol.projection.createProjection(
       view3DOptions.projection, 'EPSG:3857');
   values[ol.View3DProperty.DIRECTION] = goog.isDef(view3DOptions.direction) ?
-          view3DOptions.direction : null;
+      view3DOptions.direction : null;
   values[ol.View3DProperty.RIGHT] = goog.isDef(view3DOptions.right) ?
-          view3DOptions.right : null;
+      view3DOptions.right : null;
   values[ol.View3DProperty.UP] = goog.isDef(view3DOptions.up) ?
-          view3DOptions.up : null;
+      view3DOptions.up : null;
   if (goog.isDef(view3DOptions.resolution)) {
     values[ol.View3DProperty.RESOLUTION] = view3DOptions.resolution;
   } else if (goog.isDef(view3DOptions.zoom)) {
@@ -70,7 +70,6 @@ ol.View3D = function(opt_view3DOptions) {
   }
   values[ol.View3DProperty.ROTATION] = view3DOptions.rotation;
 
-
   this.setValues(values);
 
   /**
@@ -82,9 +81,8 @@ ol.View3D = function(opt_view3DOptions) {
     this._view2D = view3DOptions.view2D;
   }
   else {
-    var cartographicCoord =
-        /**@type{ol.Coordinate}**/
-        ol.ellipsoid.WGS84.cartesianToCartographic(this.getCenter());
+    var cartographicCoord = /** @type {ol.Coordinate} **/
+        (ol.ellipsoid.WGS84.cartesianToCartographic(this.getCenter()));
     var cartesian = this.getProjection().project(ol.ellipsoid.WGS84,
         cartographicCoord);
     this._view2d = new ol.View2D({
@@ -93,6 +91,7 @@ ol.View3D = function(opt_view3DOptions) {
       view3D: this
     });
   }
+
 };
 goog.inherits(ol.View3D, ol.View);
 
