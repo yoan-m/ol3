@@ -97,6 +97,7 @@ PLOVR_JAR = 'bin/plovr-eba786b34df9.jar'
 PLOVR_JAR_MD5 = '20eac8ccc4578676511cf7ccbfc65100'
 
 CESIUM_ZIP = 'build/Cesium-b15.zip'
+CESIUM_ZIP_MD5 = 'f25ae0d3654d9017f176ad8157bc895b'
 CESIUM_DIR = 'examples/cesium'
 
 PROJ4JS = 'build/proj4js/lib/proj4js-combined.js'
@@ -432,7 +433,8 @@ def cesium_dir(t):
 @target(CESIUM_ZIP, clean=False)
 def cesium_zip(t):
     t.info('downloading %r', t.name)
-    t.download('http://cesium.agi.com/releases/' + os.path.basename(CESIUM_ZIP))
+    t.download('http://cesium.agi.com/releases/' + os.path.basename(CESIUM_ZIP),
+               md5=CESIUM_ZIP_MD5)
     t.info('downloaded %r', t.name)
 
 
