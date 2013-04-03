@@ -91,7 +91,7 @@ SRC = [path
        if path.endswith('.js')
        if path not in SHADER_SRC]
 
-PLOVR_JAR = 'bin/plovr-eba786b34df9.jar'
+PLOVR_JAR = 'build/plovr-eba786b34df9.jar'
 PLOVR_JAR_MD5 = '20eac8ccc4578676511cf7ccbfc65100'
 
 CESIUM_ZIP = 'build/Cesium-b15.zip'
@@ -419,8 +419,10 @@ virtual('plovr', PLOVR_JAR)
 
 @target(PLOVR_JAR, clean=False)
 def plovr_jar(t):
+    t.info('downloading %r', t.name)
     t.download('https://plovr.googlecode.com/files/' +
                os.path.basename(PLOVR_JAR), md5=PLOVR_JAR_MD5)
+    t.info('downloaded %r', t.name)
 
 virtual('cesium', CESIUM_DIR)
 
@@ -557,8 +559,10 @@ def proj4js(t):
 
 @target(PROJ4JS_ZIP, clean=False)
 def proj4js_zip(t):
+    t.info('downloading %r', t.name)
     t.download('http://download.osgeo.org/proj4js/' +
                os.path.basename(t.name), md5=PROJ4JS_ZIP_MD5)
+    t.info('downloaded %r', t.name)
 
 
 @target('test', INTERNAL_SRC, PROJ4JS, 'build/test/requireall.js', phony=True)
