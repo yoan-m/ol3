@@ -53,8 +53,7 @@ EXTERNAL_SRC = [
 EXAMPLES = [path
             for path in ifind('examples')
             if path.endswith('.html')
-            if path != 'examples/index.html'
-            if not path.startswith('examples/cesium/')]
+            if path != 'examples/index.html']
 
 EXAMPLES_SRC = [path
                 for path in ifind('examples')
@@ -64,8 +63,7 @@ EXAMPLES_SRC = [path
                 if not path.startswith('examples/font-awesome')
                 if path != 'examples/Jugl.js'
                 if path != 'examples/jquery.min.js'
-                if path != 'examples/example-list.js'
-                if not path.startswith('examples/cesium')]
+                if path != 'examples/example-list.js']
 
 EXAMPLES_JSON = ['build/' + example.replace('.html', '.json')
                  for example in EXAMPLES]
@@ -98,7 +96,7 @@ PLOVR_JAR_MD5 = '20eac8ccc4578676511cf7ccbfc65100'
 
 CESIUM_ZIP = 'build/Cesium-b15.zip'
 CESIUM_ZIP_MD5 = 'f25ae0d3654d9017f176ad8157bc895b'
-CESIUM_DIR = 'examples/cesium'
+CESIUM_DIR = 'build/cesium'
 
 PROJ4JS = 'build/proj4js/lib/proj4js-combined.js'
 PROJ4JS_ZIP = 'build/proj4js-1.1.0.zip'
@@ -529,6 +527,8 @@ def host_examples(t):
           '--root_with_prefix', 'build/gh-pages/%(BRANCH)s/closure-library/'
           'third_party ../../third_party',
           '--output_file', 'build/gh-pages/%(BRANCH)s/build/ol-deps.js')
+    t.makedirs('build/gh-pages/%(BRANCH)s/build')
+    t.cp_r('build/cesium', 'build/gh-pages/%(BRANCH)s/build/cesium')
 
 
 @target('check-examples', 'host-examples', phony=True)
