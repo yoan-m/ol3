@@ -47,7 +47,7 @@ ol.renderer.cesium.Layer.prototype.getImageryLayer = function() {
  */
 ol.renderer.cesium.Layer.prototype.handleLayerBrightnessChange = function() {
   this.imageryLayer_.brightness = this.getLayer().getBrightness();
-  this.dispatchChangeEvent();
+  this.renderIfReadyAndVisible();
 };
 
 
@@ -56,7 +56,7 @@ ol.renderer.cesium.Layer.prototype.handleLayerBrightnessChange = function() {
  */
 ol.renderer.cesium.Layer.prototype.handleLayerContrastChange = function() {
   this.imageryLayer_.contrast = this.getLayer().getContrast();
-  this.dispatchChangeEvent();
+  this.renderIfReadyAndVisible();
 };
 
 
@@ -65,7 +65,7 @@ ol.renderer.cesium.Layer.prototype.handleLayerContrastChange = function() {
  */
 ol.renderer.cesium.Layer.prototype.handleLayerHueChange = function() {
   this.imageryLayer_.hue = this.getLayer().getHue();
-  this.dispatchChangeEvent();
+  this.renderIfReadyAndVisible();
 };
 
 
@@ -74,7 +74,7 @@ ol.renderer.cesium.Layer.prototype.handleLayerHueChange = function() {
  */
 ol.renderer.cesium.Layer.prototype.handleLayerOpacityChange = function() {
   this.imageryLayer_.alpha = this.getLayer().getOpacity();
-  this.dispatchChangeEvent();
+  this.renderIfReadyAndVisible();
 };
 
 
@@ -83,7 +83,7 @@ ol.renderer.cesium.Layer.prototype.handleLayerOpacityChange = function() {
  */
 ol.renderer.cesium.Layer.prototype.handleLayerSaturationChange = function() {
   this.imageryLayer_.saturation = this.getLayer().getSaturation();
-  this.dispatchChangeEvent();
+  this.renderIfReadyAndVisible();
 };
 
 
@@ -91,8 +91,11 @@ ol.renderer.cesium.Layer.prototype.handleLayerSaturationChange = function() {
  * @inheritDoc
  */
 ol.renderer.cesium.Layer.prototype.handleLayerVisibleChange = function() {
-  this.imageryLayer_.show = this.getLayer().getVisible();
-  this.dispatchChangeEvent();
+  var layer = this.getLayer();
+  this.imageryLayer_.show = layer.getVisible();
+  if (layer.isReady()) {
+    this.getMap().render();
+  }
 };
 
 
