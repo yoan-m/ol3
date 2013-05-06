@@ -1,6 +1,8 @@
 goog.provide('ol.renderer.cesium.Map');
 
+goog.require('goog.asserts');
 goog.require('goog.debug.Logger');
+goog.require('goog.dispose');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('ol.layer.TileLayer');

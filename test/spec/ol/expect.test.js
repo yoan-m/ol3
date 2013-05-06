@@ -89,43 +89,21 @@ describe('expect.js', function() {
 
   });
 
-  describe('equalArray', function() {
+  describe('Test equality of XML documents - xmleql', function() {
 
-    it('knows who\'s cool', function() {
-      expect(['me']).to.equalArray(['me']);
-    });
-
-    it('knows who isn\'t', function() {
-      expect(['you']).not.to.equalArray([]);
-    });
-
-  });
-
-  describe('preferItBeforeItWasFamous', function() {
-
-    it('respects the artist\'s privacy', function() {
-      expect(function() {
-        expect(['David', 'Bowie']).to.preferItBeforeItWasFamous(
-            ['David', 'Robert', 'Jones']);
-      }).to.throwException();
-    });
-
-    it('prefers to keep some things quiet', function() {
-      expect(function() {
-        expect(['Cyrus']).to.preferItBeforeItWasFamous(['Cyrus']);
-      }).not.to.throwException();
-
-    });
-
-  });
-
-  describe('equalArray and preferItBeforeItWasFamous', function() {
-
-    it('should record a duet together \u266c', function() {
-      expect(expect(['David Bowie']).to.equalArray).to.be(
-          expect(['Miley Cyrus']).to.preferItBeforeItWasFamous);
+    it('Test XML docs', function() {
+      var url = 'spec/ol/parser/kml/point.kml';
+      afterLoadXml(url, function(xml) {
+        var parser = new ol.parser.KML();
+        var obj = parser.read(xml);
+        var output = parser.write(obj);
+        expect(goog.dom.xml.loadXml(output)).to.xmleql(xml);
+      });
     });
 
   });
 
 });
+
+goog.require('goog.dom.xml');
+goog.require('ol.parser.KML');

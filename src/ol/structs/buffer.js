@@ -1,6 +1,7 @@
 goog.provide('ol.structs.Buffer');
 
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.webgl');
 goog.require('ol.structs.IntegerSet');
 
@@ -85,7 +86,8 @@ ol.structs.Buffer.prototype.add = function(values) {
   for (i = 0; i < size; ++i) {
     this.arr_[offset + i] = values[i];
   }
-  for (i = 0; i < this.dirtySets_.length; ++i) {
+  var ii;
+  for (i = 0, ii = this.dirtySets_.length; i < ii; ++i) {
     this.dirtySets_[i].addRange(offset, offset + size);
   }
   return offset;
@@ -150,9 +152,9 @@ ol.structs.Buffer.prototype.getUsage = function() {
  * @param {number} offset Offset.
  */
 ol.structs.Buffer.prototype.remove = function(size, offset) {
-  var i;
+  var i, ii;
   this.freeSet_.addRange(offset, offset + size);
-  for (i = 0; i < this.dirtySets_.length; ++i) {
+  for (i = 0, ii = this.dirtySets_.length; i < ii; ++i) {
     this.dirtySets_[i].removeRange(offset, offset + size);
   }
   if (ol.BUFFER_REPLACE_UNUSED_ENTRIES_WITH_NANS) {
@@ -185,7 +187,8 @@ ol.structs.Buffer.prototype.set = function(values, offset) {
   for (i = 0; i < n; ++i) {
     arr[offset + i] = values[i];
   }
-  for (i = 0; i < this.dirtySets_.length; ++i) {
+  var ii;
+  for (i = 0, ii = this.dirtySets_.length; i < ii; ++i) {
     this.dirtySets_[i].addRange(offset, offset + n);
   }
 };

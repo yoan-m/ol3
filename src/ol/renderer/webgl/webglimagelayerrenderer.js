@@ -1,6 +1,10 @@
 goog.provide('ol.renderer.webgl.ImageLayer');
 
+goog.require('goog.asserts');
+goog.require('goog.events');
+goog.require('goog.events.EventType');
 goog.require('goog.vec.Mat4');
+goog.require('goog.webgl');
 goog.require('ol.Coordinate');
 goog.require('ol.Extent');
 goog.require('ol.Image');
@@ -33,8 +37,8 @@ goog.inherits(ol.renderer.webgl.ImageLayer, ol.renderer.webgl.Layer);
 
 
 /**
- * @private
  * @param {ol.Image} image Image.
+ * @private
  * @return {WebGLTexture} Texture.
  */
 ol.renderer.webgl.ImageLayer.prototype.createTexture_ = function(image) {
@@ -68,6 +72,7 @@ ol.renderer.webgl.ImageLayer.prototype.createTexture_ = function(image) {
 
 
 /**
+ * @protected
  * @return {ol.layer.ImageLayer} Tile layer.
  */
 ol.renderer.webgl.ImageLayer.prototype.getImageLayer = function() {
@@ -137,18 +142,19 @@ ol.renderer.webgl.ImageLayer.prototype.renderFrame =
     this.texture = texture;
 
     this.updateAttributions(frameState.attributions, image.getAttributions());
+    this.updateLogos(frameState, imageSource);
   }
 };
 
 
 /**
- * @private
  * @param {number} canvasWidth Canvas width.
  * @param {number} canvasHeight Canvas height.
  * @param {ol.Coordinate} viewCenter View center.
  * @param {number} viewResolution View resolution.
  * @param {number} viewRotation View rotation.
  * @param {ol.Extent} imageExtent Image extent.
+ * @private
  */
 ol.renderer.webgl.ImageLayer.prototype.updateProjectionMatrix_ =
     function(canvasWidth, canvasHeight, viewCenter,
@@ -163,11 +169,13 @@ ol.renderer.webgl.ImageLayer.prototype.updateProjectionMatrix_ =
       2 / canvasExtentWidth, 2 / canvasExtentHeight, 1);
   goog.vec.Mat4.rotateZ(projectionMatrix, -viewRotation);
   goog.vec.Mat4.translate(projectionMatrix,
-      imageExtent.minX - viewCenter.x,
-      imageExtent.minY - viewCenter.y,
+      imageExtent[0] - viewCenter[0],
+      imageExtent[2] - viewCenter[1],
       0);
   goog.vec.Mat4.scale(projectionMatrix,
-      imageExtent.getWidth() / 2, imageExtent.getHeight() / 2, 1);
+      (imageExtent[1] - imageExtent[0]) / 2,
+      (imageExtent[3] - imageExtent[2]) / 2,
+      1);
   goog.vec.Mat4.translate(projectionMatrix, 1, 1, 0);
 
 };

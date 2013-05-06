@@ -143,4 +143,3 @@ ol.renderer.cesium.ImageryProvider.prototype.requestImage =
   }
   return undefined;
 };
-

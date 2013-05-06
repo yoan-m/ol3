@@ -45,4 +45,3 @@ ol.IView3D.prototype.getRight = function() {
  */
 ol.IView3D.prototype.getUp = function() {
 };
-

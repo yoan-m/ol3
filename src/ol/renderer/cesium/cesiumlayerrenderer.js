@@ -1,5 +1,6 @@
 goog.provide('ol.renderer.cesium.Layer');
 
+goog.require('goog.asserts');
 goog.require('ol.layer.Layer');
 goog.require('ol.renderer.Layer');
 goog.require('ol.renderer.cesium.ImageryProvider');

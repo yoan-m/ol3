@@ -1,6 +1,7 @@
 goog.provide('ol.View3D');
 goog.provide('ol.View3DProperty');
 
+goog.require('goog.asserts');
 goog.require('ol.Constraints');
 goog.require('ol.Coordinate');
 goog.require('ol.Extent');
