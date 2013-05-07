@@ -135,11 +135,29 @@ ol.renderer.cesium.Map.prototype.createLayerRenderer = function(layer) {
 
 
 /**
+ * @param {?ol.FrameState} frameState Frame state.
+ * @private
+ */
+ol.renderer.cesium.Map.prototype.createLayerRenderers_ = function(frameState) {
+  var layersArray = frameState.layersArray;
+  var i, ii, layer;
+  for (i = 0, ii = layersArray.length; i < ii; ++i) {
+    layer = layersArray[i];
+    // getLayerRenderer creates a layer renderer for layer if
+    // we don't have one already.
+    this.getLayerRenderer(layer);
+  }
+};
+
+
+/**
  * @inheritDoc
  */
 ol.renderer.cesium.Map.prototype.renderFrame = function(frameState) {
   if (!goog.isNull(frameState)) {
     this.calculateMatrices2D(frameState);
+    this.createLayerRenderers_(frameState);
+    this.scheduleRemoveUnusedLayerRenderers(frameState);
   }
 };
 
