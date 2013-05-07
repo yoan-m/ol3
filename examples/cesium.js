@@ -8,10 +8,10 @@ goog.require('ol.source.MapQuestOpenAerial');
 
 
 /*var view = new ol.View3D({
-  center: new ol.Coordinate(26415645.342789244, 0, 0),
-  direction : new ol.Coordinate(-1, 0, 0),
-  up : new ol.Coordinate(0, 0, 1),
-  right : new ol.Coordinate(0, 1, 0),
+  center: [26415645.342789244, 0, 0],
+  direction : [-1, 0, 0],
+  up : [0, 0, 1],
+  right : [0, 1, 0],
   zoom: 1
 });
 var cesium = new ol.Map({
@@ -39,10 +39,11 @@ var map = new ol.Map({
   renderer: ol.RendererHint.WEBGL,
   target: 'ol3',
   view: new ol.View2D({
-    center: new ol.Coordinate(0, 0),
+    center: [0, 0],
     zoom: 1
   })
 });
+
 var cesium = new ol.Map({
   target: 'cesium',
   renderer: ol.RendererHint.CESIUM
