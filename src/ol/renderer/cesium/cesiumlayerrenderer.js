@@ -19,9 +19,9 @@ ol.renderer.cesium.Layer = function(mapRenderer, layer) {
 
   /**
    * @private
-   * @type {Cesium.ImageryLayer|undefined}
+   * @type {Cesium.ImageryLayer}
    */
-  this.imageryLayer_ = undefined;
+  this.imageryLayer_ = null;
 
   var source = layer.getSource();
   if (source instanceof ol.source.ImageTileSource) {
@@ -35,7 +35,7 @@ goog.inherits(ol.renderer.cesium.Layer, ol.renderer.Layer);
 
 
 /**
- * @return {Cesium.ImageryLayer|undefined} ImageryLayer.
+ * @return {Cesium.ImageryLayer} ImageryLayer.
  */
 ol.renderer.cesium.Layer.prototype.getImageryLayer = function() {
   return this.imageryLayer_;
