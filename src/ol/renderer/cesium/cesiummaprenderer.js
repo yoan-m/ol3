@@ -2,7 +2,6 @@ goog.provide('ol.renderer.cesium.Map');
 
 goog.require('goog.asserts');
 goog.require('goog.debug.Logger');
-goog.require('goog.dispose');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('ol.layer.TileLayer');
@@ -91,30 +90,6 @@ goog.inherits(ol.renderer.cesium.Map, ol.renderer.Map);
 /**
  * @inheritDoc
  */
-ol.renderer.cesium.Map.prototype.addLayer = function(layer) {
-  var layerRenderer = this.createLayerRenderer(layer);
-  this.setLayerRenderer(layer, layerRenderer);
-
-  var cb = this.scene_.getPrimitives().getCentralBody();
-  cb.getImageryLayers().add(layerRenderer.getImageryLayer());
-};
-
-
-/**
- * @inheritDoc
- */
-ol.renderer.cesium.Map.prototype.removeLayer = function(layer) {
-  var cb = this.scene_.getPrimitives().getCentralBody();
-  var layerRenderer = this.removeLayerRenderer(layer);
-  cb.getImageryLayers().remove(layerRenderer.getImageryLayer(), false);
-
-  goog.dispose(layerRenderer);
-};
-
-
-/**
- * @inheritDoc
- */
 ol.renderer.cesium.Map.prototype.getCanvas = function() {
   return this.canvas_;
 };
@@ -133,7 +108,12 @@ ol.renderer.cesium.Map.prototype.getScene = function() {
  */
 ol.renderer.cesium.Map.prototype.createLayerRenderer = function(layer) {
   if (layer instanceof ol.layer.TileLayer) {
-    return new ol.renderer.cesium.Layer(this, layer);
+    var layerRenderer = new ol.renderer.cesium.Layer(this, layer);
+
+    var cb = this.scene_.getPrimitives().getCentralBody();
+    cb.getImageryLayers().add(layerRenderer.getImageryLayer());
+
+    return layerRenderer;
   } else {
     goog.asserts.assert(false);
     return null;
@@ -148,6 +128,15 @@ ol.renderer.cesium.Map.prototype.renderFrame = function(frameState) {
   if (!goog.isNull(frameState)) {
     this.calculateMatrices2D(frameState);
   }
+};
+
+
+/**
+ * @inheritDoc
+ */
+ol.renderer.cesium.Map.prototype.removeLayerRenderer = function(layerRenderer) {
+  var cb = this.scene_.getPrimitives().getCentralBody();
+  cb.getImageryLayers().remove(layerRenderer.getImageryLayer(), false);
 };
 
 

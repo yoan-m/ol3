@@ -172,14 +172,25 @@ ol.renderer.Map.prototype.getMap = function() {
 
 
 /**
+ * @param {ol.renderer.Layer} layerRenderer Layer renderer.
+ * @protected
+ */
+ol.renderer.Map.prototype.removeLayerRenderer = goog.nullFunction;
+
+
+/**
  * @param {string} layerKey Layer key.
  * @return {ol.renderer.Layer} Layer renderer.
  * @private
  */
 ol.renderer.Map.prototype.removeLayerRendererByKey_ = function(layerKey) {
   goog.asserts.assert(layerKey in this.layerRenderers_);
+
   var layerRenderer = this.layerRenderers_[layerKey];
   delete this.layerRenderers_[layerKey];
+
+  this.removeLayerRenderer(layerRenderer);
+
   return layerRenderer;
 };
 
