@@ -170,6 +170,8 @@ ol.renderer.cesium.Map.prototype.renderFrame = function(frameState) {
       this.canvas_.width = size.width;
       this.canvas_.height = size.height;
       this.canvasSize_ = size;
+      var frustum = this.scene_.getCamera().frustum;
+      frustum.aspectRatio = size.width / size.height;
     }
   }
 };
