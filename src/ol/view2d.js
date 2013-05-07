@@ -441,10 +441,10 @@ ol.View2D.prototype.createView3D_ = function() {
   goog.vec.Mat3.multVec3(rotation, u, u);
   goog.vec.Vec3.cross(d, u, r);
 
-  center = new ol.Coordinate(result[0], result[1], result[2]);
-  var direction = new ol.Coordinate(d[0], d[1], d[2]);
-  var right = new ol.Coordinate(r[0], r[1], r[2]);
-  var up = new ol.Coordinate(u[0], u[1], u[2]);
+  center = [result[0], result[1], result[2]];
+  var direction = [d[0], d[1], d[2]];
+  var right = [r[0], r[1], r[2]];
+  var up = [u[0], u[1], u[2]];
 
   return new ol.View3D({
     center: center,

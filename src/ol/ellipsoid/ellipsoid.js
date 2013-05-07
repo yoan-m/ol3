@@ -252,7 +252,7 @@ ol.Ellipsoid.prototype.cartesianToCartographic = function(cartesian) {
   }
   var height = value * goog.vec.Vec3.magnitude(h);
 
-  return new ol.Coordinate(longitude, latitude, height);
+  return [longitude, latitude, height];
 };
 
 
@@ -403,7 +403,7 @@ ol.Ellipsoid.prototype.cartographicToCartesian =
 
   var result = goog.vec.Vec3.createNumber();
   goog.vec.Vec3.add(k, n, result);
-  return new ol.Coordinate(result[0], result[1], result[2]);
+  return [result[0], result[1], result[2]];
 };
 
 

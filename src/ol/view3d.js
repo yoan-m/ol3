@@ -14,8 +14,10 @@ goog.require('ol.Size');
 goog.require('ol.View');
 //goog.require('ol.View2D');
 goog.require('ol.animation');
+goog.require('ol.coordinate');
 goog.require('ol.easing');
 goog.require('ol.ellipsoid.WGS84');
+goog.require('ol.extent');
 goog.require('ol.projection');
 
 
@@ -161,7 +163,7 @@ ol.View3D.prototype.getExtent = function(size) {
   var minY = center.y - resolution * size.height / 2;
   var maxX = center.x + resolution * size.width / 2;
   var maxY = center.y + resolution * size.height / 2;
-  return new ol.Extent(minX, minY, maxX, maxY);
+  return [minX, maxX, minY, maxY];
 };
 
 
@@ -197,8 +199,8 @@ goog.exportProperty(
  * @return {number} Resolution.
  */
 ol.View3D.prototype.getResolutionForExtent = function(extent, size) {
-  var xResolution = (extent.maxX - extent.minX) / size.width;
-  var yResolution = (extent.maxY - extent.minY) / size.height;
+  var xResolution = (extent[1] - extent[0]) / size.width;
+  var yResolution = (extent[3] - extent[2]) / size.height;
   return Math.max(xResolution, yResolution);
 };
 
@@ -226,7 +228,7 @@ ol.View3D.prototype.getView2DState = function() {
   var resolution = /** @type {number} */ (this.getResolution());
   var rotation = /** @type {number} */ (this.getRotation());
   return {
-    center: new ol.Coordinate(center.x, center.y),
+    center: center.slice(),
     projection: projection,
     resolution: resolution,
     rotation: rotation
@@ -264,7 +266,7 @@ ol.View3D.prototype.getView2D = function() {
  * @param {ol.Size} size Box pixel size.
  */
 ol.View3D.prototype.fitExtent = function(extent, size) {
-  this.setCenter(extent.getCenter());
+  this.setCenter(ol.extent.getCenter(extent));
   var resolution = this.getResolutionForExtent(extent, size);
   resolution = this.constraints_.resolution(resolution, 0, 0);
   this.setResolution(resolution);
@@ -338,10 +340,8 @@ ol.View3D.prototype.rotate = function(map, rotation, opt_anchor) {
   if (goog.isDefAndNotNull(opt_anchor)) {
     var anchor = opt_anchor;
     var oldCenter = /** @type {!ol.Coordinate} */ (this.getCenter());
-    var center = new ol.Coordinate(
-        oldCenter.x - anchor.x,
-        oldCenter.y - anchor.y);
-    center.rotate(rotation - this.getRotation());
+    var center = [oldCenter[0] - anchor[0], oldCenter[1] - anchor[1]];
+    ol.coordinate.rotate(center, rotation - this.getRotation());
     center.x += anchor.x;
     center.y += anchor.y;
     map.withFrozenRendering(function() {
@@ -367,7 +367,7 @@ ol.View3D.prototype.zoom_ = function(map, resolution, opt_anchor) {
     var oldResolution = this.getResolution();
     var x = anchor.x - resolution * (anchor.x - oldCenter.x) / oldResolution;
     var y = anchor.y - resolution * (anchor.y - oldCenter.y) / oldResolution;
-    var center = new ol.Coordinate(x, y);
+    var center = [x, y];
     map.withFrozenRendering(function() {
       this.setCenter(center);
       this.setResolution(resolution);
@@ -431,9 +431,11 @@ ol.View3D.prototype.zoomWithoutConstraints =
       var anchor = opt_anchor;
       var oldCenter = /** @type {!ol.Coordinate} */ (this.getCenter());
       var oldResolution = this.getResolution();
-      var x = anchor.x - resolution * (anchor.x - oldCenter.x) / oldResolution;
-      var y = anchor.y - resolution * (anchor.y - oldCenter.y) / oldResolution;
-      var center = new ol.Coordinate(x, y);
+      var x = anchor[0] - resolution *
+          (anchor[0] - oldCenter[0]) / oldResolution;
+      var y = anchor[1] - resolution *
+          (anchor[1] - oldCenter[1]) / oldResolution;
+      var center = [x, y];
       map.withFrozenRendering(function() {
         this.setCenter(center);
         this.setResolution(resolution);
@@ -478,8 +480,8 @@ ol.View3D.createConstraints_ = function(view3DOptions) {
       var projectionExtent = ol.projection.createProjection(
           view3DOptions.projection, 'EPSG:3857').getExtent();
       maxResolution = Math.max(
-          projectionExtent.maxX - projectionExtent.minX,
-          projectionExtent.maxY - projectionExtent.minY) / ol.DEFAULT_TILE_SIZE;
+          projectionExtent[1] - projectionExtent[0],
+          projectionExtent[3] - projectionExtent[2]) / ol.DEFAULT_TILE_SIZE;
       // number of steps we want between two data resolutions
       var numSteps = 4;
       numZoomLevels = 29 * numSteps;
