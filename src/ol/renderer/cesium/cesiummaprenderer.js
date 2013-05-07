@@ -42,6 +42,12 @@ ol.renderer.cesium.Map = function(container, map) {
 
   /**
    * @private
+   * @type {ol.Size}
+   */
+  this.canvasSize_ = new ol.Size(container.clientHeight, container.clientWidth);
+
+  /**
+   * @private
    * @type {Cesium.Scene}
    */
   this.scene_ = new Cesium.Scene(this.canvas_);
@@ -158,6 +164,13 @@ ol.renderer.cesium.Map.prototype.renderFrame = function(frameState) {
     this.calculateMatrices2D(frameState);
     this.createLayerRenderers_(frameState);
     this.scheduleRemoveUnusedLayerRenderers(frameState);
+
+    var size = frameState.size;
+    if (!this.canvasSize_.equals(size)) {
+      this.canvas_.width = size.width;
+      this.canvas_.height = size.height;
+      this.canvasSize_ = size;
+    }
   }
 };
 
