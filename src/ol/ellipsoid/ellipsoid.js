@@ -219,7 +219,7 @@ ol.Ellipsoid.prototype.vincentyInitialBearing =
 /**
  * Converts the provided cartesian to cartographic representation.
  * The cartesian is undefined at the center of the ellipsoid.
- * @param {null|ol.Coordinate|undefined} cartesian Coordinate.
+ * @param {null|ol.Coordinate|undefined} coordinate Coordinate.
  * @return {ol.Coordinate} Cartographic coordinate in radians.
  */
 ol.Ellipsoid.prototype.cartesianToCartographic = function(coordinate) {
@@ -232,7 +232,7 @@ ol.Ellipsoid.prototype.cartesianToCartographic = function(coordinate) {
   var p = this._scaleToGeodeticSurface(point, cartesianToCartographicP);
 
   if (typeof p === 'undefined') {
-    return undefined;
+    return null;
   }
   //TODO put in global space or cache as a member to reduce cost of recreating.
   var cartesianToCartographicN = goog.vec.Vec3.createNumber();
