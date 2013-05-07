@@ -90,7 +90,7 @@ ol.View3D = function(opt_view3DOptions) {
         cartographicCoord);
     this._view2d = new ol.View2D({
       center: cartesian,
-      resolution: cartesian.z / ol.DEFAULT_TILE_SIZE,
+      resolution: cartesian[2] / ol.DEFAULT_TILE_SIZE,
       view3D: this
     });
   }
@@ -256,7 +256,7 @@ ol.View3D.prototype.getView2D = function() {
       cartographicCoord);
 
   view2d.setCenter(cartesian);
-  view2d.setResolution(cartesian.z / ol.DEFAULT_TILE_SIZE);
+  view2d.setResolution(cartesian[2] / ol.DEFAULT_TILE_SIZE);
   return view2d;
 };
 
