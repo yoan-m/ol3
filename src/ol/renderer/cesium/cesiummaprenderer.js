@@ -64,16 +64,29 @@ ol.renderer.cesium.Map = function(container, map) {
       return;
     }
     view = view.getView3D();
+
     var center = view.getCenter();
+    var centerCartesian3 = new Cesium.Cartesian3(
+        center[0], center[1], center[2]);
+
     var direction = view.getDirection();
+    var directionCartesian3 = new Cesium.Cartesian3(
+        direction[0], direction[1], direction[2]);
+
     var up = view.getUp();
+    var upCartesian3 = new Cesium.Cartesian3(
+        up[0], up[1], up[2]);
+
     var right = view.getRight();
+    var rightCartesian3 = new Cesium.Cartesian3(
+        right[0], right[1], right[2]);
+
     var camera = that.scene_.getCamera();
 
-    Cesium.Cartesian3.clone(center, camera.position);
-    Cesium.Cartesian3.clone(direction, camera.direction);
-    Cesium.Cartesian3.clone(up, camera.up);
-    Cesium.Cartesian3.clone(right, camera.right);
+    Cesium.Cartesian3.clone(centerCartesian3, camera.position);
+    Cesium.Cartesian3.clone(directionCartesian3, camera.direction);
+    Cesium.Cartesian3.clone(upCartesian3, camera.up);
+    Cesium.Cartesian3.clone(rightCartesian3, camera.right);
   }
 
   function tick() {

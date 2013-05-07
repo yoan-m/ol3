@@ -407,7 +407,7 @@ ol.View2D.prototype.createView3D_ = function() {
   var resolution = /** @type {number} */ (this.getResolution());
   var newCenter = ol.projection.transform(center, projection,
       ol.projection.get('EPSG:3857'));
-  newCenter.z = resolution * ol.DEFAULT_TILE_SIZE;
+  newCenter[2] = resolution * ol.DEFAULT_TILE_SIZE;
 
   //unproject
   var cartographic = projection.unproject(ol.ellipsoid.WGS84, newCenter);
@@ -416,11 +416,12 @@ ol.View2D.prototype.createView3D_ = function() {
   //TODO cartographic should be it's own type and not use ol.Coordinate.
   //TODO can we pass goog.vec.Vec3 around?
   var cartesian = ol.ellipsoid.WGS84.cartographicToCartesian(
-      cartographic.x,
-      cartographic.y,
-      cartographic.z);
+      cartographic[0],
+      cartographic[1],
+      cartographic[2]);
   var result = goog.vec.Vec3.createNumber();
-  goog.vec.Vec3.setFromValues(result, cartesian.x, cartesian.y, cartesian.z);
+  goog.vec.Vec3.setFromValues(result,
+      cartesian[0], cartesian[1], cartesian[2]);
   //camera stuff
   var unitZ = goog.vec.Vec3.createNumber();
   goog.vec.Vec3.setFromValues(unitZ, 0.0, 0.0, 1.0);

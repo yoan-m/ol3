@@ -188,14 +188,13 @@ ol.projection.EPSG3857.prototype.getPointResolution =
  * @inheritDoc
  */
 ol.projection.EPSG3857.prototype.unproject =
-    function(ellipsoid, cartesian) {
+    function(ellipsoid, point) {
   var semimajorAxis = ellipsoid.getMaximumRadius();
   var oneOverEarthSemimajorAxis = 1.0 / semimajorAxis;
-  var longitude = cartesian.x * oneOverEarthSemimajorAxis;
-  var latitude =
-      ol.projection.EPSG3857.mercatorAngleToGeodeticLatitude(cartesian.y *
-              oneOverEarthSemimajorAxis);
-  var height = cartesian.z;
+  var longitude = point[0] * oneOverEarthSemimajorAxis;
+  var latitude = ol.projection.EPSG3857.mercatorAngleToGeodeticLatitude(
+      point[1] * oneOverEarthSemimajorAxis);
+  var height = point[2];
   return [longitude, latitude, height];
 };
 
@@ -222,12 +221,11 @@ ol.projection.EPSG3857.geodeticLatitudeToMercatorAngle = function(latitude) {
  * @inheritDoc
  */
 ol.projection.EPSG3857.prototype.project =
-    function(ellipsoid, cartographic) {
+    function(ellipsoid, point) {
   var semimajorAxis = ellipsoid.getMaximumRadius();
-  var x = cartographic.x * semimajorAxis;
-  var y =
-      ol.projection.EPSG3857.geodeticLatitudeToMercatorAngle(cartographic.y) *
-          semimajorAxis;
-  var z = cartographic.z;
+  var x = point[0] * semimajorAxis;
+  var y = ol.projection.EPSG3857.geodeticLatitudeToMercatorAngle(
+      point[1]) * semimajorAxis;
+  var z = point[2];
   return [x, y, z];
 };
