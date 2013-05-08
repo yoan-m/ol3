@@ -212,14 +212,9 @@ Cesium.Event = function() {};
 
 /**
  * @constructor
+ * @extends {Cesium.TilingScheme}
  */
 Cesium.GeographicTilingScheme = function() {};
-
-
-/**
- * @return {Cesium.Extent}
- */
-Cesium.GeographicTilingScheme.prototype.getExtent = function() {};
 
 
 
@@ -299,10 +294,7 @@ Cesium.ImageryProvider.prototype.getMaximumLevel = function() {};
 
 
 /**
- *  //@return {TilingScheme} The tiling scheme.
- *  // TODO
- *  //@return {Cesium.GeographicTilingScheme}
- *  @return {Cesium.WebMercatorTilingScheme}
+ *  @return {Cesium.TilingScheme}
  */
 Cesium.ImageryProvider.prototype.getTilingScheme = function() {};
 
@@ -688,6 +680,18 @@ Cesium.SkyBoxOptions_.prototype.positiveZ;
 Cesium.SkyBoxOptions_.prototype.negativeZ;
 
 
+/**
+ * @constructor
+ */
+Cesium.TilingScheme = function() {};
+
+
+/**
+ * @return {Cesium.Extent}
+ */
+Cesium.TilingScheme.prototype.getExtent = function() {};
+
+
 
 /**
  * @constructor
@@ -713,13 +717,6 @@ Cesium.WebMercatorProjection.prototype.unproject = function(cartesian) {};
 
 /**
  * @constructor
+ * @extends {Cesium.TilingScheme}
  */
 Cesium.WebMercatorTilingScheme = function() {};
-
-
-/**
- * @return {Cesium.Extent}
- */
-Cesium.WebMercatorTilingScheme.prototype.getExtent = function() {};
-
-
