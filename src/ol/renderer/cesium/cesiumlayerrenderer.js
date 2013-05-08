@@ -1,10 +1,12 @@
 goog.provide('ol.renderer.cesium.Layer');
 
 goog.require('goog.asserts');
+goog.require('ol.TileState');
 goog.require('ol.layer.Layer');
+goog.require('ol.projection');
 goog.require('ol.renderer.Layer');
-goog.require('ol.renderer.cesium.ImageryProvider');
 goog.require('ol.source.ImageTileSource');
+goog.require('ol.tilegrid.XYZ');
 
 
 
@@ -25,13 +27,106 @@ ol.renderer.cesium.Layer = function(mapRenderer, layer) {
 
   var source = layer.getSource();
   if (source instanceof ol.source.ImageTileSource) {
-    var imageryProvider = new ol.renderer.cesium.ImageryProvider(source);
+    var imageryProvider =
+        ol.renderer.cesium.Layer.createImageryProvider(source);
     this.imageryLayer_ = new Cesium.ImageryLayer(imageryProvider);
   } else {
     goog.asserts.assert(false);
   }
 };
 goog.inherits(ol.renderer.cesium.Layer, ol.renderer.Layer);
+
+
+/**
+ * @param {ol.source.ImageTileSource} source Source.
+ * @return {Cesium.ImageryProvider} ImageryProvider.
+ */
+ol.renderer.cesium.Layer.createImageryProvider = function(source) {
+
+  var projection = source.getProjection();
+
+  var tileGrid = source.getTileGrid();
+  if (goog.isDef(tileGrid)) {
+    goog.asserts.assert(tileGrid instanceof ol.tilegrid.XYZ);
+  } else {
+    // FIXME this won't work for Bing or TileJSON
+    tileGrid = new ol.tilegrid.XYZ({
+      maxZoom: ol.DEFAULT_MAX_ZOOM
+    });
+  }
+
+  var tilingScheme;
+  if (tileGrid instanceof ol.tilegrid.XYZ) {
+    if (ol.projection.equivalent(projection, ol.projection.get('EPSG:3857'))) {
+      tilingScheme = new Cesium.WebMercatorTilingScheme();
+    } else if (ol.projection.equivalent(
+        projection, ol.projection.get('EPSG:4326'))) {
+      tilingScheme = new Cesium.GeographicTilingScheme();
+    } else {
+      goog.asserts.assert(false);
+    }
+  } else {
+    goog.asserts.assert(false);
+  }
+
+  var errorEvent = new Cesium.Event();
+
+  var imageryProvider = {
+    'getErrorEvent': function() {
+      return errorEvent;
+    },
+    'getExtent': function() {
+      goog.asserts.assert(source.isReady());
+      return tilingScheme.getExtent();
+    },
+    'getLogo': function() {
+      goog.asserts.assert(source.isReady());
+      return undefined;
+    },
+    'getMaximumLevel': function() {
+      goog.asserts.assert(source.isReady());
+      return tileGrid.getResolutions().length - 1;
+    },
+    'getProxy': function() {
+      goog.asserts.assert(source.isReady());
+      return undefined;
+    },
+    'getTileDiscardPolicy': function() {
+      goog.asserts.assert(source.isReady());
+      return undefined;
+    },
+    'getTileHeight': function() {
+      goog.asserts.assert(source.isReady());
+      return tileGrid.getTileSize(0).height;
+    },
+    'getTilingScheme': function() {
+      goog.asserts.assert(source.isReady());
+      return tilingScheme;
+    },
+    'getTileWidth': function() {
+      goog.asserts.assert(source.isReady());
+      return tileGrid.getTileSize(0).width;
+    },
+    'isReady': function() {
+      return source.isReady();
+    },
+    'requestImage':
+        /**
+         * @param {number} x X.
+         * @param {number} y Y.
+         * @param {number} level Level.
+         * @return {Cesium.Promise} Promise.
+         */
+        function(x, y, level) {
+          var tile = source.getTile(level, x, -y - 1, projection);
+          goog.asserts.assert(tile.getState() != ol.TileState.EMPTY);
+          return Cesium.ImageryProvider.loadImage(tile.getKey());
+        }
+  };
+
+  return /** @type {Cesium.ImageryProvider} */ (imageryProvider);
+
+};
 
 
 /**
