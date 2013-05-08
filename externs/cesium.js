@@ -320,6 +320,12 @@ Cesium.ImageryProvider.prototype.getLogo = function() {};
 
 
 /**
+ * @return {Cesium.Proxy|undefined}
+ */
+Cesium.ImageryProvider.prototype.getProxy = function() {};
+
+
+/**
  * @param {number} x The tile X coordinate.
  * @param {number} y The tile Y coordinate.
  * @param {number} level The tile level.
@@ -491,6 +497,20 @@ Cesium.PerspectiveFrustrum.prototype.near;
  * @constructor
  */
 Cesium.Promise = function() {};
+
+
+
+/**
+ * @constructor
+ */
+Cesium.Proxy = function() {};
+
+
+/**
+ * @param {string} resource
+ * @return {string}
+ */
+Cesium.Proxy.prototype.getUrl = function(resource) {};
 
 
 
