@@ -116,6 +116,7 @@
 
 /**
  * @typedef {Object} ol.control.AttributionOptions
+ * @property {string|undefined} className Class name.
  * @property {ol.Map|undefined} map Map.
  * @property {Element|undefined} target Target.
  */
@@ -133,6 +134,7 @@
 
 /**
  * @typedef {Object} ol.control.FullScreenOptions
+ * @property {string|undefined} className Class name.
  * @property {boolean|undefined} keys Full keyboard access.
  * @property {ol.Map|undefined} map Map.
  * @property {Element|undefined} target Target.
@@ -140,12 +142,14 @@
 
 /**
  * @typedef {Object} ol.control.LogoOptions
+ * @property {string|undefined} className Class name.
  * @property {ol.Map|undefined} map Map.
  * @property {Element|undefined} target Target.
  */
 
 /**
  * @typedef {Object} ol.control.MousePositionOptions
+ * @property {string|undefined} className Class name.
  * @property {ol.CoordinateFormatType|undefined} coordinateFormat Coordinate
  *     format.
  * @property {ol.Map|undefined} map Map.
@@ -156,6 +160,7 @@
 
 /**
  * @typedef {Object} ol.control.ScaleLineOptions
+ * @property {string|undefined} className Class name.
  * @property {ol.Map|undefined} map Map.
  * @property {number|undefined} minWidth Minimum width in pixels.
  * @property {Element|undefined} target Target.
@@ -164,6 +169,7 @@
 
 /**
  * @typedef {Object} ol.control.ZoomOptions
+ * @property {string|undefined} className Class name.
  * @property {number|undefined} delta Delta.
  * @property {ol.Map|undefined} map Map.
  * @property {Element|undefined} target Target.
@@ -171,6 +177,7 @@
 
 /**
  * @typedef {Object} ol.control.ZoomSliderOptions
+ * @property {string|undefined} className Class name.
  * @property {ol.Map|undefined} map Map.
  * @property {number|undefined} maxResolution Maximum resolution.
  * @property {number|undefined} minResolution Minimum resolution.
